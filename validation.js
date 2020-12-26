@@ -1,4 +1,4 @@
-const Joi = require('joi')
+import Joi from 'joi'
 
 const registerSchema = Joi.object({
     name: Joi.string().required().min(3).max(255),
@@ -11,9 +11,12 @@ const loginSchema = Joi.object({
     password: Joi.string().required().min(8).max(1024).required(),
 })
 
-module.exports.registerValidation = (body) => {
+let registerValidation = (body) => {
     return registerSchema.validate(body)
 }
-module.exports.loginValidation = (body) => {
+
+let loginValidation = (body) => {
     return loginSchema.validate(body)
 }
+
+export { registerValidation, loginValidation }

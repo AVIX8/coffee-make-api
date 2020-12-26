@@ -1,22 +1,20 @@
-const mongoose = require('mongoose')
+import connection from '../config/database.js'
+import mongoose from 'mongoose'
+// import { passportLocalMongoose } from "passport-local-mongoose";
+
 const userSchema = new mongoose.Schema({
-    name: {
-        type: String,
-        required: true,
-        min: 3,
-        max: 255,
-    },
     email: {
         type: String,
         required: true,
         max: 255,
-        // min: 6,
     },
-    password: {
+    hash: {
         type: String,
-        required: true,
-        max: 1024,
-        min: 8,
+        require: true,
+    },
+    name: {
+        type: String,
+        max: 255,
     },
     date: {
         type: Date,
@@ -24,4 +22,6 @@ const userSchema = new mongoose.Schema({
     },
 })
 
-module.exports = mongoose.model('User', userSchema)
+// userSchema.plugin(passportLocalMongoose, { usernameField : 'email' });
+
+export default connection.model('User', userSchema)

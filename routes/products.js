@@ -1,11 +1,11 @@
-const router = require('express').Router()
-const User = require('../models/User')
-// const jwt = require("jsonwebtoken")
-const authCheck = require("../middlewares/authCheck")
+import { Router } from 'express'
+import User from '../models/User.js'
+// const authCheck = require("../middlewares/authCheck")
+const router = Router()
 
-router.post('/', authCheck, async (req,res) => {
-    const user = await User.findOne({_id: req.user._id})
-    res.send({'somedata': 'lolar', user})
+router.post('/', async (req, res) => {
+    // const user = await User.findOne({ _id: req.user._id })
+    res.send({ somedata: 'lolar' })
 })
 
-module.exports = router
+export default router

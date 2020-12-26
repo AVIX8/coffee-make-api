@@ -1,3 +1,4 @@
+const { number } = require('joi')
 const mongoose = require('mongoose')
 const productSchema = new mongoose.Schema({
     title: {
@@ -13,9 +14,12 @@ const productSchema = new mongoose.Schema({
         min: 3,
         max: 255,
     },
-    // images: {
-    //     type: [String]
-    // }
+    price: {
+        type: Number
+    },
+    images: {
+        type: [String]
+    }
 
 })
 
