@@ -1,14 +1,13 @@
 import Joi from 'joi'
 
 const registerSchema = Joi.object({
-    name: Joi.string().required().min(3).max(255),
-    email: Joi.string().required().min(6).max(255).email(),
-    password: Joi.string().required().min(8).max(1024).required(),
+    email: Joi.string().required().max(255).email(),
+    password: Joi.string().required().min(8).max(1024),
 })
 
 const loginSchema = Joi.object({
-    email: Joi.string().required().min(6).max(255).email(),
-    password: Joi.string().required().min(8).max(1024).required(),
+    email: Joi.string().required().max(255).email(),
+    password: Joi.string().required().max(1024),
 })
 
 let registerValidation = (body) => {
