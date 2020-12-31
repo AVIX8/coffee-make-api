@@ -1,5 +1,6 @@
-const { number } = require('joi')
-const mongoose = require('mongoose')
+import mongoose from 'mongoose'
+import connection from "../config/database.js";
+
 const productSchema = new mongoose.Schema({
     title: {
         type: String,
@@ -23,4 +24,4 @@ const productSchema = new mongoose.Schema({
 
 })
 
-module.exports = mongoose.model('Product', productSchema)
+export default connection.model('Product', productSchema)

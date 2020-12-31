@@ -1,20 +1,16 @@
-const mongoose = require('mongoose')
-const Product = require('./Product')
+import mongoose from "mongoose";
+import connection from "../config/database.js";
+
 const categorySchema = new mongoose.Schema({
-    slug: {
-        type: String,
-        required: true,
-        unique: true,
-    },
     name: {
         type: String,
     },
-    products: [
-        {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'Product',
-        },
-    ],
+    parent: {
+        type: String,
+    },
+    category: {
+        type: String,
+    }
 })
 
-module.exports = mongoose.model('Category', categorySchema)
+module.exports = connection.model('Category', categorySchema)
