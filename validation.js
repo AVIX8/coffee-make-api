@@ -1,4 +1,4 @@
-import Joi from 'joi'
+const Joi = require('joi')
 
 const registerSchema = Joi.object({
     email: Joi.string().required().max(255).email(),
@@ -18,4 +18,4 @@ let loginValidation = (body) => {
     return loginSchema.validate(body)
 }
 
-export { registerValidation, loginValidation }
+module.exports.default = { registerValidation, loginValidation }

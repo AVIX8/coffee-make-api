@@ -1,9 +1,9 @@
-import User from '../models/User.js'
-import passport from 'passport'
+const User = require('../models/User')
+const passport = require('passport')
 
-import { registerValidation, loginValidation } from '../validation.js'
+const { registerValidation, loginValidation } = require('../validation')
 
-export async function register(req, res) {
+module.exports.register = async(req, res) => {
     const { error } = registerValidation(req.body)
     if (error) return res.status(400).send(error.details[0])
 
@@ -26,7 +26,7 @@ export async function register(req, res) {
     )
 }
 
-export async function login(req, res) {
+module.exports.login = async(req, res) => {
     const { error } = loginValidation(req.body)
     if (error) return res.status(400).send(error.details[0])
 
@@ -36,12 +36,12 @@ export async function login(req, res) {
     })
 }
 
-export function logout(req, res) {
+module.exports.logout = (req, res) => {
     req.logout()
     res.send({ user: req.user })
 }
 
-export function getUserData(req, res) {
+module.exports.getUserData = (req, res) => {
     console.log('profile: getUserData')
     res.send({ user: req.user })
 }

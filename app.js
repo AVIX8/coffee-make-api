@@ -1,25 +1,25 @@
-import * as express from 'express'
-import dotenv from 'dotenv'
+const express = require('express')
+const dotenv = require('dotenv')
 // import morgan from 'morgan'
-import bodyParser from 'body-parser'
-import expressSession from 'express-session'
-import connectMongo from 'connect-mongo'
-import cors from 'cors'
+const bodyParser = require('body-parser')
+const expressSession = require('express-session')
+const connectMongo = require('connect-mongo')
+const cors = require('cors')
 
-import connection from './config/database.js'
-
-import passport from 'passport'
-import { initialize as initializePassport } from './config/passport.js'
+require('./config/database')
+const passport = require('passport')
+const initializePassport = require('./config/passport').initialize
 
 //Routes
-import userRoute from './routes/user.js'
-import categoryRoute from './routes/categories.js'
-import productsRoute from './routes/products.js'
+const userRoute = require('./routes/user')
+const categoryRoute = require('./routes/categories')
+const productsRoute = require('./routes/products')
+const mongoose = require('mongoose')
 
 const app = express()
 const MongoStore = connectMongo(expressSession)
 const sessionStore = new MongoStore({
-    mongooseConnection: connection,
+    mongooseConnection: mongoose.connection,
     collection: 'sessions',
 })
 dotenv.config()
@@ -72,4 +72,4 @@ app.listen(port, () => {
     console.log(`🚀 Serve at http://loacalhost:${port}`)
 })
 
-export default app
+module.exports.default = app

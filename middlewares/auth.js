@@ -1,5 +1,5 @@
   
-export function isAuth(req, res, next) {
+module.exports.isAuth = (req, res, next) => {
     if (req.isAuthenticated()) {
         next();
     } else {
@@ -7,7 +7,7 @@ export function isAuth(req, res, next) {
     }
 }
 
-export function isAdmin(req, res, next) {
+module.exports.isAdmin = (req, res, next) => {
     if (req.isAuthenticated() && req.user.admin) {
         next();
     } else {

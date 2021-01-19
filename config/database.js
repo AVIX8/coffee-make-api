@@ -1,9 +1,9 @@
-import mongoose from 'mongoose'
-import dotenv from 'dotenv'
+const mongoose = require('mongoose')
+const dotenv = require('dotenv')
 
 dotenv.config()
 
-const connection = mongoose.createConnection(
+const connection = mongoose.connect(
     process.env.DB_CONNECT,
     { useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true },
     (err) => {
@@ -16,4 +16,4 @@ const connection = mongoose.createConnection(
     }
 )
 
-export default connection
+module.exports.default = connection

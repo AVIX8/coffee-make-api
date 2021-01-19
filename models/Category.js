@@ -1,5 +1,5 @@
-import mongoose from "mongoose";
-import connection from "../config/database.js";
+const mongoose = require('mongoose')
+// const connection = require( "../config/database.js")
 
 const categorySchema = new mongoose.Schema({
     name: {
@@ -11,11 +11,13 @@ const categorySchema = new mongoose.Schema({
     },
     category: {
         type: String,
-        unique: true
+        unique: true,
     },
     image: {
         type: String,
-    }
+    },
 })
 
-export default connection.model('Category', categorySchema)
+const Category = mongoose.model('Category', categorySchema)
+
+module.exports.default = Category

@@ -1,6 +1,6 @@
-import connection from '../config/database.js'
-import mongoose from 'mongoose'
-import passportLocalMongoose from 'passport-local-mongoose'
+// const connection = require('../config/database')
+const mongoose = require('mongoose')
+const passportLocalMongoose = require('passport-local-mongoose')
 
 const userSchema = new mongoose.Schema({
     hash: {
@@ -46,4 +46,6 @@ userSchema.plugin(passportLocalMongoose, {
     },
 })
 
-export default connection.model('User', userSchema)
+const User = mongoose.model('User', userSchema)
+
+module.exports.default = User

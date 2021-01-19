@@ -1,4 +1,4 @@
-import User from '../models/User.js'
+const User = require('../models/User')
 
 function initialize(passport) {
     passport.use(User.createStrategy());
@@ -16,4 +16,4 @@ function initialize(passport) {
 
 
 
-export { initialize }
+module.exports.initialize = initialize

@@ -1,20 +1,21 @@
-import Category from '../models/Category.js'
+const Category = require('../models/Category.js')
 
-export async function get(req, res) {
-    
+module.exports.get = async (req, res) => {
     let { parentPath, parentId } = req.body
-    
+
     if (parentId) {
         let parent = await Category.findById(parentId)
         if (!parent)
             return res.status(400).send({ message: 'invalid category id' })
         parentPath = parent.category
     }
-    let categories = await Category.find({ parent: new RegExp('^' + parentPath) })
+    let categories = await Category.find({
+        parent: new RegExp('^' + parentPath),
+    })
     return res.send({ categories })
 }
 
-export async function create(req, res) {
+module.exports.create = async (req, res) => {
     let { name, parentId } = req.body
     if (!name) return res.status(400).send({ message: 'name is required' })
     let parentPath = ''
@@ -36,7 +37,7 @@ export async function create(req, res) {
         })
 }
 
-export function update(req, res) {
+module.exports.update = (req, res) => {
     console.log(req.body)
     res.send('update')
 }

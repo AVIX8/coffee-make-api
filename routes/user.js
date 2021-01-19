@@ -1,11 +1,16 @@
-import { Router } from 'express'
-import { register, login, logout, getUserData } from '../controllers/user.js'
-import { isAuth } from "../middlewares/auth.js";
+const { Router } = require('express')
+const {
+    register,
+    login,
+    logout,
+    getUserData,
+} = require('../controllers/user.js')
+const { isAuth } = require('../middlewares/auth.js')
 
 const router = Router()
 router.post('/register', register)
 router.post('/login', login)
-router.get('/logout', logout);
+router.get('/logout', logout)
 router.get('/profile', isAuth, getUserData)
 
-export default router
+module.exports.default = router
