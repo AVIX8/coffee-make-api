@@ -1,11 +1,11 @@
-import mongoose from "mongoose";
-import dotenv from "dotenv"
+import mongoose from 'mongoose'
+import dotenv from 'dotenv'
 
 dotenv.config()
 
 const connection = mongoose.createConnection(
     process.env.DB_CONNECT,
-    { useNewUrlParser: true, useUnifiedTopology: true },
+    { useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true },
     (err) => {
         if (err) {
             console.log('😡 Failed to connect to database')
@@ -17,4 +17,3 @@ const connection = mongoose.createConnection(
 )
 
 export default connection
-

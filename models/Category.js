@@ -7,10 +7,15 @@ const categorySchema = new mongoose.Schema({
     },
     parent: {
         type: String,
+        default: '/',
     },
     category: {
+        type: String,
+        unique: true
+    },
+    image: {
         type: String,
     }
 })
 
-module.exports = connection.model('Category', categorySchema)
+export default connection.model('Category', categorySchema)

@@ -24,6 +24,9 @@ const userSchema = new mongoose.Schema({
         type: Date,
         default: Date.now(),
     },
+    admin: {
+        type: Boolean,
+    }
 })
 
 userSchema.plugin(passportLocalMongoose, {
