@@ -1,5 +1,5 @@
 const mongoose = require('mongoose')
-// const connection = require( "../config/database.js")
+const connection = require( "../config/database.js")
 
 const categorySchema = new mongoose.Schema({
     name: {
@@ -18,6 +18,6 @@ const categorySchema = new mongoose.Schema({
     },
 })
 
-const Category = mongoose.model('Category', categorySchema)
+const Category = connection.model('Category', categorySchema)
 
-module.exports.default = Category
+module.exports = Category

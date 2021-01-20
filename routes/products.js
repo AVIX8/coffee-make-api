@@ -8,4 +8,4 @@ router.post('/', async (req, res) => {
     res.send({ somedata: 'lolar' })
 })
 
-module.exports.default = router
+module.exports = router

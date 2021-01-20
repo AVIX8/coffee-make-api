@@ -18,4 +18,4 @@ let loginValidation = (body) => {
     return loginSchema.validate(body)
 }
 
-module.exports.default = { registerValidation, loginValidation }
+module.exports = { registerValidation, loginValidation }

@@ -6,7 +6,7 @@ const expressSession = require('express-session')
 const connectMongo = require('connect-mongo')
 const cors = require('cors')
 
-require('./config/database')
+const connection = require('./config/database')
 const passport = require('passport')
 const initializePassport = require('./config/passport').initialize
 
@@ -14,12 +14,11 @@ const initializePassport = require('./config/passport').initialize
 const userRoute = require('./routes/user')
 const categoryRoute = require('./routes/categories')
 const productsRoute = require('./routes/products')
-const mongoose = require('mongoose')
 
 const app = express()
 const MongoStore = connectMongo(expressSession)
 const sessionStore = new MongoStore({
-    mongooseConnection: mongoose.connection,
+    mongooseConnection: connection,
     collection: 'sessions',
 })
 dotenv.config()
@@ -32,8 +31,8 @@ const corsConfig = {
 app.use(cors(corsConfig))
 
 // Middlewares
-app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({ extended: false }))
 app.use(
     expressSession({
         secret: process.env.COOKIE_SECRET,
@@ -52,13 +51,13 @@ initializePassport(passport)
 app.use(passport.initialize())
 app.use(passport.session())
 
-app.use((req, res, next) => {
-    console.log('======== Session & User ========')
-    console.log(req.session)
-    console.log(`User: ${req.user}`)
-    console.log('======== Session & User ========')
-    next()
-})
+// app.use((req, res, next) => {
+//     console.log('======== Session & User ========')
+//     console.log(req.session)
+//     console.log(`User: ${req.user}`)
+//     console.log('======== Session & User ========')
+//     next()
+// })
 
 // Routes
 app.use('/api/user', userRoute)
@@ -67,9 +66,9 @@ app.use('/api/products', productsRoute)
 
 app.use('/storage', express.static('./storage'))
 
-const port = process.env.PORT || 4000
+const port = process.env.PORT ?? 4000
 app.listen(port, () => {
     console.log(`🚀 Serve at http://loacalhost:${port}`)
 })
 
-module.exports.default = app
+module.exports = app

@@ -2,7 +2,7 @@ const Category = require('../models/Category.js')
 
 module.exports.get = async (req, res) => {
     let { parentPath, parentId } = req.body
-
+    
     if (parentId) {
         let parent = await Category.findById(parentId)
         if (!parent)

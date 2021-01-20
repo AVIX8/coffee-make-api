@@ -1,5 +1,5 @@
-import mongoose from 'mongoose'
-import connection from '../config/database.js'
+const mongoose = require('mongoose')
+const connection = require('../config/database')
 
 const productSchema = new mongoose.Schema({
     name: {
@@ -28,4 +28,6 @@ const productSchema = new mongoose.Schema({
     },
 })
 
-export default connection.model('Product', productSchema)
+const Product = connection.model('Product', productSchema) 
+
+module.exports = Product

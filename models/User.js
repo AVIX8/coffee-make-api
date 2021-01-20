@@ -1,6 +1,6 @@
-// const connection = require('../config/database')
 const mongoose = require('mongoose')
 const passportLocalMongoose = require('passport-local-mongoose')
+const connection = require('../config/database')
 
 const userSchema = new mongoose.Schema({
     hash: {
@@ -46,6 +46,6 @@ userSchema.plugin(passportLocalMongoose, {
     },
 })
 
-const User = mongoose.model('User', userSchema)
+const User = connection.model('User', userSchema)
 
-module.exports.default = User
+module.exports = User

@@ -8,4 +8,4 @@ router.post('/create', isAdmin, create)
 router.post('/update', isAdmin, update)
 // router.get('/profile', isAuth, getUserData)
 
-module.exports.default = router
+module.exports = router
