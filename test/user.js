@@ -1,24 +1,15 @@
 const chai = require('chai')
 const { should } = chai
 const superTest = require('supertest')
-const { describe, it, before } = require('mocha')
+const { describe, it } = require('mocha')
 const app = require('../app.js')
-const connection = require('../config/database')
 
 should()
 
 let agent = superTest.agent(app)
 
 describe('Users', () => {
-    // before((done) => {
-    //     connection.on('open', () => {
-    //         done()
-    //     })
-    // })
-
-    /**
-     * testing the /login route
-     */
+    
     describe('POST /api/user/login', () => {
         it("shouldn't nothing", (done) => {
             agent
@@ -28,6 +19,8 @@ describe('Users', () => {
                     res.body.should.be.a('Object')
                     res.body.should.have.property('message')
                     done()
+                }).catch((err) => {
+                    done(err)
                 })
         })
 
@@ -39,14 +32,16 @@ describe('Users', () => {
             agent
                 .post('/api/user/login')
                 .send(body)
-                .end((err, res) => {
+                .then((res) => {
                     res.header['set-cookie'] //?
                     res.body.message //?
-                    res.status.should.be.eq(200)
+                    res.status.should.be.eq(401)
                     res.body.should.be.a('Object')
                     res.body.should.have.property('id')
                     console.log(res.body.id)
-                    return done()
+                    done()
+                }).catch((err) => {
+                    done(err)
                 })
         })
     })
