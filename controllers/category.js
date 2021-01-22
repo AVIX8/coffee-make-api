@@ -6,7 +6,7 @@ module.exports.get = async (req, res) => {
     if (parentId) {
         let parent = await Category.findById(parentId)
         if (!parent)
-            return res.status(400).send({ message: 'invalid category id' })
+            return res.status(400).send({ message: 'неверный идентификатор категории' })
         parentPath = parent.category
     }
     let categories = await Category.find({
@@ -17,12 +17,12 @@ module.exports.get = async (req, res) => {
 
 module.exports.create = async (req, res) => {
     let { name, parentId } = req.body
-    if (!name) return res.status(400).send({ message: 'name is required' })
+    if (!name) return res.status(400).send({ message: 'имя обязательно' })
     let parentPath = ''
     if (parentId) {
         let parent = await Category.findById(parentId)
         if (!parent)
-            return res.status(400).send({ message: 'invalid category id' })
+            return res.status(400).send({ message: 'неверный идентификатор категории' })
         parentPath = parent.category
     }
     let category = parentPath + '/' + name
@@ -33,7 +33,7 @@ module.exports.create = async (req, res) => {
         })
         .catch((err) => {
             console.log(err)
-            res.status(400).send({ message: 'failed to create category', err })
+            res.status(400).send({ message: 'не удалось создать категорию', err })
         })
 }
 

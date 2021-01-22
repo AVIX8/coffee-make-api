@@ -33,16 +33,16 @@ userSchema.plugin(passportLocalMongoose, {
     usernameField: 'email',
 
     errorMessages: {
-        MissingPasswordError: 'No password was given',
-        AttemptTooSoonError: 'Account is currently locked. Try again later',
+        MissingPasswordError: 'Пароль не указан',
+        AttemptTooSoonError: 'Аккаунт в настоящее время заблокирован. Попробуйте позже',
         TooManyAttemptsError:
-            'Account locked due to too many failed login attempts',
+            'Аккаунт заблокирован из-за слишком большого количества неудачных попыток входа',
         NoSaltValueStoredError:
-            'Authentication not possible. No salt value stored',
-        IncorrectPasswordError: 'Password or email are incorrect',
-        IncorrectUsernameError: 'Password or email are incorrect',
-        MissingUsernameError: 'No email was given',
-        UserExistsError: 'A user with the given email is already registered',
+            'Аутентификация невозможна. Значение соли не сохранено',
+        IncorrectPasswordError: 'Пароль или адрес электронной почты неверны',
+        IncorrectUsernameError: 'Пароль или адрес электронной почты неверны',
+        MissingUsernameError: 'Электронная почта не указана',
+        UserExistsError: 'Пользователь с данным адресом электронной почты уже зарегистрирован',
     },
 })
 

@@ -30,10 +30,14 @@ module.exports.login = async (req, res) => {
     const { error } = loginValidation(req.body)
     if (error) return res.status(400).send(error.details[0])
 
-    passport.authenticate('local')(req,res, () => {
-        console.log(`login: ${req.user.id}`)
-        return res.json({ id: req.user.id })
-    })
+    passport.authenticate('local', (err, user, info) => {
+        if (err) return res.status(500)
+        if (info) return res.status(400).send(info)
+        req.logIn(user, function (err) {
+            if (err) return res.status(500)
+            return res.send({ id: user.id })
+        })
+    })(req, res)
 }
 
 module.exports.logout = (req, res) => {
@@ -42,6 +46,9 @@ module.exports.logout = (req, res) => {
 }
 
 module.exports.getUserData = (req, res) => {
-    console.log('profile: getUserData')
     res.send({ user: req.user })
+}
+
+module.exports.profile = (req, res) => {
+    res.send({ profile: { ...req.user, orders: {} } })
 }

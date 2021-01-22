@@ -1,6 +1,6 @@
 const express = require('express')
 const dotenv = require('dotenv')
-// import morgan from 'morgan'
+const morgan = require('morgan')
 const bodyParser = require('body-parser')
 const expressSession = require('express-session')
 const connectMongo = require('connect-mongo')
@@ -22,7 +22,7 @@ const sessionStore = new MongoStore({
     collection: 'sessions',
 })
 dotenv.config()
-// app.use(morgan())
+app.use(morgan('dev'))
 
 const corsConfig = {
     origin: 'http://83.246.145.119:3000',
