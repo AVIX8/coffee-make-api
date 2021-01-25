@@ -1,12 +1,5 @@
-const chai = require('chai')
-const { should } = chai
-const superTest = require('supertest')
 const { describe, it } = require('mocha')
-const app = require('../app.js')
-
-should()
-
-let agent = superTest.agent(app)
+const { agent } = require('./init')
 
 const correctUserData = {
     email: 'qwe1234@gmail.com',
@@ -53,7 +46,7 @@ describe('Users', () => {
     })
 
     describe('POST /api/user/login', () => {
-        it('Failed to login', (done) => {
+        it('Failed to login without user data', (done) => {
             agent
                 .post('/api/user/login')
                 .expect(400)

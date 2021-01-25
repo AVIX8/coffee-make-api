@@ -11,7 +11,7 @@ module.exports = function () {
             'routes/*.js',
 
             'src/**/*.js',
-            '!test/*.js',
+            'test/init.js',
         ],
 
         tests: ['test/**.js'],
@@ -30,7 +30,7 @@ module.exports = function () {
             restart: true
         },
         setup: function (wallaby) {
-            process.env.NODE_ENV = 'test'
+            // process.env.NODE_ENV = 'test'
 
             wallaby.delayStart()
             wallaby.testFramework.ui('tdd')

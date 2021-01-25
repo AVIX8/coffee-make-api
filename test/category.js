@@ -1,22 +1,5 @@
-process.env.NODE_ENV = 'test'
-const chai = require('chai')
-const { should } = chai
-const superTest = require('supertest')
-const { describe, it, before, after } = require('mocha')
-const app = require('../app.js')
-const connection = require('../config/database')
-
-should()
-
-let agent = superTest.agent(app)
-
-before((done) => {
-    connection.on('open', () => done())
-})
-
-after(() => {
-    connection.close()
-})
+const { describe, it } = require('mocha')
+const { agent } = require('./init')
 
 describe('Categories', () => {  
 
@@ -55,7 +38,7 @@ describe('Categories', () => {
                 })
         })
 
-        it('OK, get categories by parentId', (done) => {
+        it('OK, get categories by  parentId', (done) => {
             agent
                 .post('/api/categories')
                 .send({ parentId: '5ff323a40db1542dc0e4c792' })

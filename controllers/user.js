@@ -7,19 +7,19 @@ module.exports.register = async (req, res) => {
     const { error } = registerValidation(req.body)
     if (error) return res.status(400).send(error.details[0])
 
-    console.log('registering user')
+    // console.log('registering user')
     User.register(
         new User({ email: req.body.email }),
         req.body.password,
         (err) => {
             if (err) {
-                console.log(err.message)
+                // console.log(err.message)
                 return res.status(400).send(err)
             }
 
-            console.log('user registered')
+            // console.log('user registered')
             passport.authenticate('local')(req, res, () => {
-                console.log(`login: ${req.user.id}`)
+                // console.log(`login: ${req.user.id}`)
                 res.send({ id: req.user.id })
             })
         }
@@ -49,6 +49,7 @@ module.exports.getUserData = (req, res) => {
     res.send({ user: req.user })
 }
 
+// доделать
 module.exports.profile = (req, res) => {
-    res.send({ profile: { ...req.user, orders: {} } })
+    res.send({ profile: { user: req.user, orders: {} } })
 }

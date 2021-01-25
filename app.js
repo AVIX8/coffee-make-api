@@ -21,11 +21,16 @@ const sessionStore = new MongoStore({
     mongooseConnection: connection,
     collection: 'sessions',
 })
+
 dotenv.config()
 app.use(morgan('dev'))
 
 const corsConfig = {
-    origin: 'http://83.246.145.119:3000',
+    origin: [
+        'http://83.246.145.119:3000',
+        // 'http://188.133.196.117:3000',
+        'http://localhost:3000/',
+    ],
     credentials: true,
 }
 app.use(cors(corsConfig))

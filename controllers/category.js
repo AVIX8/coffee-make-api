@@ -10,7 +10,7 @@ module.exports.get = async (req, res) => {
         parentPath = parent.category
     }
     let categories = await Category.find({
-        parent: new RegExp('^' + parentPath),
+        parent: new RegExp('^' + parentPath + "$"),
     })
     return res.send({ categories })
 }

@@ -12,7 +12,7 @@ const router = Router()
 router.post('/register', register)
 router.post('/login', login)
 router.get('/logout', logout)
-router.get('/profile', isAuth, profile) // изменить
+router.get('/profile', isAuth, profile)
 router.get('/getUserData', isAuth, getUserData)
 
 module.exports = router
