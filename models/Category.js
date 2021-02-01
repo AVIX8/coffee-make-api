@@ -1,5 +1,5 @@
 const mongoose = require('mongoose')
-const connection = require( "../config/database.js")
+const { connection } = require( "../config/database.js")
 
 const categorySchema = new mongoose.Schema({
     name: {

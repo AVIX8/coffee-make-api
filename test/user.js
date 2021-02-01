@@ -1,6 +1,11 @@
 const { describe, it } = require('mocha')
 const { agent } = require('./init')
 
+const invalidUserData = {
+    email: 'qwe1234',
+    password: 'qweasdzxc1234',
+}
+
 const correctUserData = {
     email: 'qwe1234@gmail.com',
     password: 'qweasdzxc1234',
@@ -13,6 +18,23 @@ const incorrectUserData = {
 
 describe('Users', () => {
     describe('POST /api/user/register', () => {
+        it('Failed to register with invalid user data', (done) => {
+            agent
+                .post('/api/user/register')
+                .send(invalidUserData)
+                .expect(400)
+                .end((err, res) => {
+                    res.header['set-cookie'] //?
+                    res.body //?
+                    res.body.should.be.a('Object')
+                    res.body.should.have.property('message')
+                    // res.body.message.should.be.eq(
+                    //     '"email" must be a valid email'
+                    // )
+                    done(err)
+                })
+        })
+
         it('Successful user registration', (done) => {
             agent
                 .post('/api/user/register')
@@ -34,7 +56,7 @@ describe('Users', () => {
                 .expect(400)
                 .end((err, res) => {
                     res.header['set-cookie'] //?
-                    res.body.message //?
+                    res.body //?
                     res.body.should.be.a('Object')
                     res.body.should.have.property('message')
                     res.body.message.should.be.eq(
@@ -51,9 +73,13 @@ describe('Users', () => {
                 .post('/api/user/login')
                 .expect(400)
                 .end((err, res) => {
+                    res.header['set-cookie'] //?
                     res.body //?
                     res.body.should.be.a('Object')
                     res.body.should.have.property('message')
+                    // res.body.message.should.be.eq(
+                    //     '"email" is required'
+                    // )
                     done(err)
                 })
         })
@@ -64,9 +90,13 @@ describe('Users', () => {
                 .send(incorrectUserData)
                 .expect(400)
                 .end((err, res) => {
+                    res.header['set-cookie'] //?
                     res.body //?
                     res.body.should.be.a('Object')
                     res.body.should.have.property('message')
+                    res.body.message.should.be.eq(
+                        'Пароль или адрес электронной почты неверны'
+                    )
                     done(err)
                 })
         })

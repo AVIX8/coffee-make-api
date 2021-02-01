@@ -3,14 +3,32 @@ const dotenv = require('dotenv')
 
 dotenv.config()
 
-let connection
+let connection = mongoose.createConnection()
 
-console.log(process.env.NODE_ENV)
-if (process.env.NODE_ENV === 'test') {
-    connection = mongoose.createConnection()
-} else {
-    connection = mongoose.createConnection(
-        process.env.DB_CONNECT,
+console.log(`process.env.NODE_ENV = ${process.env.NODE_ENV}`)
+
+async function getMongoURI() {
+    let mongoURI
+    if (process.env.NODE_ENV === 'test') {
+        mongoose.Promise = Promise
+        mongoURI = process.env.WALLABY_MONGO_URI
+        if (!mongoURI) {
+            const { MongoMemoryServer } = require('mongodb-memory-server')
+            const mongoServer = new MongoMemoryServer()
+            mongoURI = await mongoServer.getUri('test')
+        }
+    } else {
+        mongoURI = process.env.DB_CONNECT
+    }
+    return mongoURI
+}
+
+(async () => {
+    let mongoURI = await getMongoURI()
+    console.log(mongoURI)
+
+    connection.openUri(
+        mongoURI,
         {
             useNewUrlParser: true,
             useUnifiedTopology: true,
@@ -25,6 +43,6 @@ if (process.env.NODE_ENV === 'test') {
             }
         }
     )
-}
+})()
 
-module.exports = connection
+module.exports.connection = connection

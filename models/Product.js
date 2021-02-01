@@ -1,5 +1,5 @@
 const mongoose = require('mongoose')
-const connection = require('../config/database')
+const { connection } = require('../config/database')
 
 const productSchema = new mongoose.Schema({
     name: {

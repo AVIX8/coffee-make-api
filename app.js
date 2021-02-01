@@ -1,12 +1,17 @@
 const express = require('express')
+
 const dotenv = require('dotenv')
-const morgan = require('morgan')
+
+// const morgan = require('morgan')
 const bodyParser = require('body-parser')
-const expressSession = require('express-session')
-const connectMongo = require('connect-mongo')
 const cors = require('cors')
 
-const connection = require('./config/database')
+const mongoose = require('mongoose')
+const { connection } = require('./config/database')
+
+const expressSession = require('express-session')
+const connectMongo = require('connect-mongo')
+
 const passport = require('passport')
 const initializePassport = require('./config/passport').initialize
 
@@ -14,16 +19,24 @@ const initializePassport = require('./config/passport').initialize
 const userRoute = require('./routes/user')
 const categoryRoute = require('./routes/categories')
 const productsRoute = require('./routes/products')
+const storageRoute = require('./routes/storage')
 
 const app = express()
+dotenv.config()
+
 const MongoStore = connectMongo(expressSession)
 const sessionStore = new MongoStore({
     mongooseConnection: connection,
     collection: 'sessions',
 })
 
-dotenv.config()
-app.use(morgan('dev'))
+connection.once('open', () => {
+    app.locals.bucket = new mongoose.mongo.GridFSBucket(connection.db, {
+        bucketName: 'storage',
+    })
+})
+
+// app.use(morgan('dev'))
 
 const corsConfig = {
     origin: [
@@ -52,7 +65,6 @@ app.use(
 )
 
 initializePassport(passport)
-
 app.use(passport.initialize())
 app.use(passport.session())
 
@@ -68,8 +80,9 @@ app.use(passport.session())
 app.use('/api/user', userRoute)
 app.use('/api/categories', categoryRoute)
 app.use('/api/products', productsRoute)
+app.use('/api/storage', storageRoute)
 
-app.use('/storage', express.static('./storage'))
+// app.use('/storage', express.static('./storage'))
 
 const port = process.env.PORT ?? 4000
 app.listen(port, () => {

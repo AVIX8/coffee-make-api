@@ -1,7 +1,7 @@
 const User = require('../models/User')
 const passport = require('passport')
 
-const { registerValidation, loginValidation } = require('../src/validation')
+const { registerValidation, loginValidation } = require('../validation/user')
 
 module.exports.register = async (req, res) => {
     const { error } = registerValidation(req.body)

@@ -37,7 +37,7 @@ module.exports = function () {
             const MongodbMemoryServer = require('mongodb-memory-server')
                 .MongoMemoryServer
             global.mongoServer = new MongodbMemoryServer()
-            global.mongoServer.getUri('test').then((mongouri) => {
+            global.mongoServer.getUri('wallaby-test').then((mongouri) => {
                 process.env.WALLABY_MONGO_URI = mongouri
                 console.log('WALLABY_MONGO_URI ', process.env.WALLABY_MONGO_URI)
                 wallaby.start()

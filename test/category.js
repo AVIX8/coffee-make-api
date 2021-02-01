@@ -4,25 +4,23 @@ const { agent } = require('./init')
 describe('Categories', () => {  
 
     describe('POST /api/categories', () => {
-        it('ERROR, create categoriy witout permission', (done) => {
+        it('Failed to create categoriy witout permission', (done) => {
             agent
                 .post('/api/categories/create')
                 .send({
                     name: 'НовоеКофе14',
                 })
-                .then((res) => {
+                .end((err, res) => {
                     res.statusCode //?
                     res.body //?
                     res.body.should.be.a('Object')
                     res.body.should.have.property('message')
                     res.body.message.should.be.eq('Вы не администратор')
                     done()
-                }).catch((err) => {
-                    done(err)
                 })
         })
 
-        it('OK, get categories by parentPath', (done) => {
+        it('Successfully get categories by parentPath', (done) => {
             agent
                 .post('/api/categories')
                 .send({ parentPath: '/кофе' })

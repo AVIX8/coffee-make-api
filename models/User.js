@@ -1,6 +1,6 @@
 const mongoose = require('mongoose')
 const passportLocalMongoose = require('passport-local-mongoose')
-const connection = require('../config/database')
+const { connection } = require('../config/database')
 
 const userSchema = new mongoose.Schema({
     hash: {
