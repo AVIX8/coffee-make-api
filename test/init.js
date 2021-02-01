@@ -5,7 +5,7 @@ const { should } = require('chai')
 const superTest = require('supertest')
 
 const app = require('../app.js')
-const { connection } = require('../config/database')
+const { connection } = require('../src/config/database')
 
 should()
 

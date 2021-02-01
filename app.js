@@ -7,19 +7,19 @@ const bodyParser = require('body-parser')
 const cors = require('cors')
 
 const mongoose = require('mongoose')
-const { connection } = require('./config/database')
+const { connection } = require('./src/config/database')
 
 const expressSession = require('express-session')
 const connectMongo = require('connect-mongo')
 
 const passport = require('passport')
-const initializePassport = require('./config/passport').initialize
+const initializePassport = require('./src/config/passport').initialize
 
 //Routes
-const userRoute = require('./routes/user')
-const categoryRoute = require('./routes/categories')
-const productsRoute = require('./routes/products')
-const storageRoute = require('./routes/storage')
+const userRoute = require('./src/routes/user')
+const categoryRoute = require('./src/routes/categories')
+const productsRoute = require('./src/routes/products')
+const storageRoute = require('./src/routes/storage')
 
 const app = express()
 dotenv.config()

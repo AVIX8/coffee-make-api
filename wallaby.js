@@ -3,18 +3,13 @@ module.exports = function () {
         files: [
             { pattern: '.env', instrument: false },
             'app.js',
-
-            'config/*.js',
-            'controllers/*.js',
-            'middlewares/*.js',
-            'models/*.js',
-            'routes/*.js',
-
             'src/**/*.js',
+
             'test/init.js',
+            'test/helpers/**/*.js',
         ],
 
-        tests: ['test/**.js'],
+        tests: ['test/**.js', '!test/init.js', '!test/helpers/**/*.js'],
 
         testFramework: 'mocha',
         env: {
@@ -27,7 +22,7 @@ module.exports = function () {
         workers: {
             initial: 1,
             regular: 1,
-            restart: true
+            restart: true,
         },
         setup: function (wallaby) {
             // process.env.NODE_ENV = 'test'
