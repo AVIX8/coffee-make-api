@@ -9,7 +9,7 @@ module.exports = function () {
             'test/helpers/**/*.js',
         ],
 
-        tests: ['test/**.js', '!test/init.js', '!test/helpers/**/*.js'],
+        tests: ['test/**/*.js', '!test/init.js', '!test/helpers/**/*.js'],
 
         testFramework: 'mocha',
         env: {

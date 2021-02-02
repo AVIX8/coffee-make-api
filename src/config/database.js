@@ -33,6 +33,7 @@ async function getMongoURI() {
             useNewUrlParser: true,
             useUnifiedTopology: true,
             useCreateIndex: true,
+            useFindAndModify: false,
         },
         (err) => {
             if (err) {
