@@ -12,8 +12,9 @@ const db = new Promise((resolve, reject) => {
 
 const storage = new GridFsStorage({
     db,
-    file: () => {
+    file: (req, file) => {
         return {
+            filename: file.originalname,
             bucketName: 'storage',
         }
     },

@@ -13,6 +13,4 @@ router.post('/create', isAdmin, upload.single('image'), create)
 router.post('/update', isAdmin, update)
 router.post('/delete', isAdmin, del)
 
-// router.get('/profile', isAuth, getUserData)
-
 module.exports = router

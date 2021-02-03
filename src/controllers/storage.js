@@ -1,4 +1,5 @@
-const { connection } = require("../config/database")
+const { connection } = require('../config/database')
+const mongoose = require('mongoose')
 
 module.exports.get = (req, res) => {
     connection.db
@@ -18,27 +19,27 @@ module.exports.get = (req, res) => {
 }
 
 module.exports.getImageById = (req, res) => {
-    connection.db
-        .collection('storage.files')
-        .findOne({ _id: req.params.id }, (err, file) => {
-            if (!file || file.length === 0) {
-                return res.status(404).send({
-                    message: 'No file exists',
-                })
-            }
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+        return res.status(404)
+    }
+    let _id = mongoose.Types.ObjectId(req.params.id)
+    connection.db.collection('storage.files').findOne({ _id }, (err, file) => {
+        if (!file || file.length === 0) {
+            return res.status(404).send({
+                message: 'No file exists',
+            })
+        }
 
-            if (
-                file.contentType === 'image/jpeg' ||
-                file.contentType === 'image/png'
-            ) {
-                const downloadStream = req.app.locals.bucket.openDownloadStream(
-                    file._id
-                )
-                downloadStream.pipe(res)
-            } else {
-                res.status(404).send({
-                    err: 'Not an image',
-                })
-            }
-        })
+        if (
+            file.contentType === 'image/jpeg' ||
+            file.contentType === 'image/png'
+        ) {
+            const downloadStream = req.app.locals.bucket.openDownloadStream(_id)
+            downloadStream.pipe(res)
+        } else {
+            res.status(404).send({
+                err: 'Not an image',
+            })
+        }
+    })
 }

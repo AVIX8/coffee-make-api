@@ -20,9 +20,10 @@ module.exports.get = async (req, res) => {
 
 module.exports.create = async (req, res) => {
     let { name, parentId } = req.body
+    console.log(req.body);
     if (!name) return res.status(400).send({ message: 'имя обязательно' })
     let parentPath = ''
-    if (parentId) {
+    if (mongoose.Types.ObjectId.isValid(parentId)) {
         let parent = await Category.findById(parentId)
         if (!parent)
             return res
@@ -55,9 +56,32 @@ module.exports.create = async (req, res) => {
         })
 }
 
-module.exports.update = (req, res) => {
-    console.log(req.body)
-    res.send('update')
+module.exports.update = async (req, res) => {
+    let category = await Category.findById(req.body.id)
+    if (!category) {
+        return res
+            .status(400)
+            .send({ message: 'неверный идентификатор категории' })
+    }
+    
+    if (req.file) {
+        if (category.image) {
+            const imageId = new mongoose.Types.ObjectId(category.image);
+            req.app.locals.bucket.delete(imageId)
+        }
+
+        await Category.findOneAndUpdate({_id: category._id}, {image: req.file?.id})
+    }
+
+    if (req.body.name && category.name != req.body.name) {
+
+        
+
+        //нужно ещё изменять у товаров
+    }
+
+
+    
 }
 
 module.exports.del = async (req, res) => {
@@ -80,15 +104,14 @@ module.exports.del = async (req, res) => {
             })
     }
 
+    //нужно убедиться, что ни один товары не принадлежит этой категории
+
     let deletedCategory = await Category.findByIdAndDelete(category._id)
-    
     
     if (category.image) {
         const imageId = new mongoose.Types.ObjectId(category.image);
         req.app.locals.bucket.delete(imageId)
     }
-
-    //нужно ещё удалять у товаров принадлежность к этой категории
 
     res.send({ deletedCategory })
 }

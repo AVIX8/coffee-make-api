@@ -2,7 +2,7 @@ const express = require('express')
 
 const dotenv = require('dotenv')
 
-// const morgan = require('morgan')
+const morgan = require('morgan')
 const bodyParser = require('body-parser')
 const cors = require('cors')
 
@@ -36,7 +36,7 @@ connection.once('open', () => {
     })
 })
 
-// app.use(morgan('dev'))
+app.use(morgan('dev'))
 
 const corsConfig = {
     origin: [
