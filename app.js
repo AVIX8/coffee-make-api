@@ -39,11 +39,20 @@ connection.once('open', () => {
 app.use(morgan('dev'))
 
 const corsConfig = {
-    origin: [
-        'http://83.246.145.119:3000',
-        // 'http://188.133.196.117:3000',
-        'http://localhost:3000/',
-    ],
+    // origin: [
+    //     'http://83.246.145.119:3000',
+    //     // 'http://188.133.196.117:3000',
+    //     'http://localhost:3000/',
+    // ],
+
+    // даунство
+    origin: (origin, callback) => {
+        console.log(origin)
+        return callback(null, true)
+    },
+    optionsSuccessStatus: 200,
+    //
+
     credentials: true,
 }
 app.use(cors(corsConfig))
