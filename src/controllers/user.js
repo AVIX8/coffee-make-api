@@ -1,5 +1,6 @@
 const User = require('../models/User')
 const passport = require('passport')
+const jwt = require('jsonwebtoken');
 
 const { registerValidation, loginValidation } = require('../validation/user')
 
@@ -17,27 +18,31 @@ module.exports.register = async (req, res) => {
                 return res.status(400).send(err)
             }
 
-            // console.log('user registered')
-            passport.authenticate('local')(req, res, () => {
-                // console.log(`login: ${req.user.id}`)
+            console.log('user registered')
+            passport.authenticate('local', { session: false })(req, res, () => {
+                console.log(`login: ${req.user}`)
                 res.send({ id: req.user.id })
             })
         }
     )
 }
 
-module.exports.login = async (req, res) => {
+module.exports.login = async (req, res, next) => {
     const { error } = loginValidation(req.body)
     if (error) return res.status(400).send(error.details[0])
 
     passport.authenticate('local', (err, user, info) => {
+        // console.log(info);
         if (err) return res.status(500)
         if (info) return res.status(400).send(info)
-        req.logIn(user, function (err) {
-            if (err) return res.status(500)
-            return res.send({ id: user.id })
+        req.logIn(user, (err) => {
+            if (err) return next(err)
+            console.log(user)
+            const token = jwt.sign({ sub: user._id }, 'TOP_SECRET');
+
+            return res.send({ id: user.id, token })
         })
-    })(req, res)
+    })(req, res, next)
 }
 
 module.exports.logout = (req, res) => {

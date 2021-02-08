@@ -22,7 +22,6 @@ describe('Users', () => {
             await agent
                 .post('/api/user/register')
                 .send(invalidUserData)
-                .expect(400)
                 .expect((res) => {
                     res.header['set-cookie'] //?
                     res.body //?
@@ -32,26 +31,26 @@ describe('Users', () => {
                     //     '"email" must be a valid email'
                     // )
                 })
+                .expect(400)
         })
 
         it('Successful user registration', async () => {
             await agent
                 .post('/api/user/register')
                 .send(correctUserData)
-                .expect(200)
                 .expect((res) => {
-                    res.header['set-cookie'] //?
+                    res.header //?
                     res.body //?
                     res.body.should.be.a('Object')
-                    res.body.should.have.property('id')
+                    // res.body.should.have.property('id')
                 })
+                .expect(200)
         })
 
         it('Failed to register an already registered user', async () => {
             await agent
                 .post('/api/user/register')
                 .send(correctUserData)
-                .expect(400)
                 .expect((res) => {
                     res.header['set-cookie'] //?
                     res.body //?
@@ -61,6 +60,7 @@ describe('Users', () => {
                         'Пользователь с данным адресом электронной почты уже зарегистрирован'
                     )
                 })
+                .expect(400)
         })
     })
 
@@ -68,9 +68,8 @@ describe('Users', () => {
         it('Failed to login without user data', async () => {
             await agent
                 .post('/api/user/login')
-                .expect(400)
                 .expect((res) => {
-                    res.header['set-cookie'] //?
+                    res.header //?
                     res.body //?
                     res.body.should.be.a('Object')
                     res.body.should.have.property('message')
@@ -78,13 +77,13 @@ describe('Users', () => {
                     //     '"email" is required'
                     // )
                 })
+                .expect(400)
         })
 
         it('Failed to login with incorrect user data', async () => {
             await agent
                 .post('/api/user/login')
                 .send(incorrectUserData)
-                .expect(400)
                 .expect((res) => {
                     res.header['set-cookie'] //?
                     res.body //?
@@ -94,19 +93,20 @@ describe('Users', () => {
                         'Пароль или адрес электронной почты неверны'
                     )
                 })
+                .expect(400)
         })
 
         it('Successful login', async () => {
             await agent
                 .post('/api/user/login')
                 .send(correctUserData)
-                .expect(200)
-                .expect((res) => {
-                    res.header['set-cookie'] //?
+                .expect((res) => { 
+                    res.header //? 
                     res.body //?
                     res.body.should.be.a('Object')
                     res.body.should.have.property('id')
                 })
+                .expect(200)
         })
     })
 
@@ -117,30 +117,41 @@ describe('Users', () => {
 
             await agent
                 .get('/api/user/getUserData')
-                .expect(401)
                 .expect((res) => {
                     res.header['set-cookie'] //?
                     res.body //?
                     res.body.should.be.a('Object')
                 })
+                .expect(401)
         })
 
         it('Successfully get user data', async () => {
             await agent.get('/api/user/logout').expect(200)
 
+
+            let token;
+
             await agent
                 .post('/api/user/login')
                 .send(correctUserData)
+                .expect((res) => {
+                    res.headers //?
+                    res.body //?
+                    token = res.body.token
+                })
                 .expect(200)
+
+            console.log(token);  
 
             await agent
                 .get('/api/user/getUserData')
-                .expect(200)
+                // .set("Authorization", `Bearer ${token}`)
                 .expect((res) => {
                     res.header['set-cookie'] //?
                     res.body //?
                     res.body.should.be.a('Object')
                 })
+                .expect(200)
         })
     })
 })
