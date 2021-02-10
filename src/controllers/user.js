@@ -25,14 +25,13 @@ module.exports.register = async (req, res) => {
             })
         }
     )
-}
+} 
 
 module.exports.login = async (req, res, next) => {
     const { error } = loginValidation(req.body)
     if (error) return res.status(400).send(error.details[0])
 
-    passport.authenticate('local', (err, user, info) => {
-        // console.log(info);
+    passport.authenticate('login', { session: false }, (err, user, info) => {
         if (err) return res.status(500)
         if (info) return res.status(400).send(info)
         req.logIn(user, (err) => {
