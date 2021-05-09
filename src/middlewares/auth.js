@@ -1,16 +1,50 @@
-  
+const jwt = require('jsonwebtoken')
+
 module.exports.isAuth = (req, res, next) => {
-    if (req.isAuthenticated()) {
-        next();
-    } else {
-        res.status(401).send({ message: 'Вы не авторизованы' });
+    if (req.method === "OPTIONS") {
+        next()
+    }
+
+    try {
+        const token = req.headers.authorization?.split(' ')?.[1]
+        if (!token) {
+            return res.status(403).json({message: "Пользователь не авторизован"})
+        }
+        const decodedData = jwt.verify(token, process.env.JWT_SECRET_KEY)
+        req.user = decodedData
+        next()
+    } catch (e) {
+        console.log(e)
+        return res.status(403).json({message: "Пользователь не авторизован"})
     }
 }
 
-module.exports.isAdmin = (req, res, next) => {
-    if (req.isAuthenticated() && req.user.admin) {
-        next();
-    } else {
-        res.status(401).send({ message: 'Вы не администратор' });
+module.exports.hasRole = (roles) => {
+    return (req, res, next) => {
+        if (req.method === "OPTIONS") {
+            next()
+        }
+
+        try {
+            const token = req.headers.authorization?.split(' ')?.[1]
+            if (!token) {
+                return res.status(403).json({message: "Пользователь не авторизован"})
+            }
+
+            const {roles: userRoles} = jwt.verify(token, process.env.JWT_SECRET_KEY)
+            let hasRole = false
+            userRoles.forEach(role => {
+                if (roles.includes(role)) {
+                    hasRole = true
+                }
+            })
+            if (!hasRole) {
+                return res.status(403).json({message: "У вас нет доступа"})
+            }
+            next();
+        } catch (e) {
+            console.log(e)
+            return res.status(403).json({message: "Пользователь не авторизован"})
+        }
     }
 }

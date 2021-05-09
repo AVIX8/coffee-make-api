@@ -37,7 +37,7 @@ module.exports.getImageById = (req, res) => {
             const downloadStream = req.app.locals.bucket.openDownloadStream(_id)
             downloadStream.pipe(res)
         } else {
-            res.status(404).send({
+            return res.status(404).send({
                 err: 'Not an image',
             })
         }

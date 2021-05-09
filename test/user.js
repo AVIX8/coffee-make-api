@@ -23,7 +23,6 @@ describe('Users', () => {
                 .post('/api/user/register')
                 .send(invalidUserData)
                 .expect((res) => {
-                    res.header['set-cookie'] //?
                     res.body //?
                     res.body.should.be.a('Object')
                     res.body.should.have.property('message')
@@ -39,20 +38,19 @@ describe('Users', () => {
                 .post('/api/user/register')
                 .send(correctUserData)
                 .expect((res) => {
-                    res.header //?
                     res.body //?
                     res.body.should.be.a('Object')
-                    // res.body.should.have.property('id')
+                    res.body.should.have.property('id')
                 })
                 .expect(200)
         })
 
         it('Failed to register an already registered user', async () => {
+            await agent.post('/api/user/register').send(correctUserData)
             await agent
                 .post('/api/user/register')
                 .send(correctUserData)
                 .expect((res) => {
-                    res.header['set-cookie'] //?
                     res.body //?
                     res.body.should.be.a('Object')
                     res.body.should.have.property('message')
@@ -69,7 +67,6 @@ describe('Users', () => {
             await agent
                 .post('/api/user/login')
                 .expect((res) => {
-                    res.header //?
                     res.body //?
                     res.body.should.be.a('Object')
                     res.body.should.have.property('message')
@@ -85,7 +82,6 @@ describe('Users', () => {
                 .post('/api/user/login')
                 .send(incorrectUserData)
                 .expect((res) => {
-                    res.header['set-cookie'] //?
                     res.body //?
                     res.body.should.be.a('Object')
                     res.body.should.have.property('message')
@@ -100,11 +96,11 @@ describe('Users', () => {
             await agent
                 .post('/api/user/login')
                 .send(correctUserData)
-                .expect((res) => { 
-                    res.header //? 
+                .expect((res) => {
                     res.body //?
                     res.body.should.be.a('Object')
-                    res.body.should.have.property('id')
+                    res.body.should.have.property('accessToken')
+                    res.body.should.have.property('refreshToken')
                 })
                 .expect(200)
         })
@@ -118,7 +114,6 @@ describe('Users', () => {
             await agent
                 .get('/api/user/getUserData')
                 .expect((res) => {
-                    res.header['set-cookie'] //?
                     res.body //?
                     res.body.should.be.a('Object')
                 })
@@ -126,28 +121,26 @@ describe('Users', () => {
         })
 
         it('Successfully get user data', async () => {
+            await agent.post('/api/user/register').send(correctUserData)
             await agent.get('/api/user/logout').expect(200)
 
-
-            let token;
+            let accessToken
 
             await agent
                 .post('/api/user/login')
                 .send(correctUserData)
                 .expect((res) => {
-                    res.headers //?
                     res.body //?
-                    token = res.body.token
+                    accessToken = res.body.accessToken
                 })
                 .expect(200)
 
-            console.log(token);  
+            console.log(accessToken)
 
             await agent
+                .set('Authorization', `Bearer ${accessToken}`)
                 .get('/api/user/getUserData')
-                // .set("Authorization", `Bearer ${token}`)
                 .expect((res) => {
-                    res.header['set-cookie'] //?
                     res.body //?
                     res.body.should.be.a('Object')
                 })

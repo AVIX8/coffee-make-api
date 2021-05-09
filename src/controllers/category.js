@@ -50,7 +50,7 @@ module.exports.create = async (req, res) => {
                 console.log(err)
             }
 
-            return res.status(400).send({
+            res.status(400).send({
                 message: message ?? 'не удалось создать категорию',
             })
         })
@@ -113,5 +113,5 @@ module.exports.del = async (req, res) => {
         req.app.locals.bucket.delete(imageId)
     }
 
-    res.send({ deletedCategory })
+    return res.send({ deletedCategory })
 }

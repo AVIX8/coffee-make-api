@@ -1,59 +1,73 @@
 const User = require('../models/User')
-const passport = require('passport')
+const Role = require('../models/Role')
 const jwt = require('jsonwebtoken');
+const bcryptjs = require('bcryptjs');
 
 const { registerValidation, loginValidation } = require('../validation/user')
+
+const messages = {
+    userAlreadyExists: "Пользователь с данным адресом электронной почты уже зарегистрирован",
+    badLogin: 'Пароль или адрес электронной почты неверны',
+}
+
+const generateAccessToken = (id, roles) => {
+    const payload = {
+        id,
+        roles
+    }
+    return jwt.sign(payload, process.env.JWT_SECRET_KEY, {expiresIn: "10m"} )
+}
 
 module.exports.register = async (req, res) => {
     const { error } = registerValidation(req.body)
     if (error) return res.status(400).send(error.details[0])
 
-    // console.log('registering user')
-    User.register(
-        new User({ email: req.body.email }),
-        req.body.password,
-        (err) => {
-            if (err) {
-                // console.log(err.message)
-                return res.status(400).send(err)
-            }
+    const { email, password } = req.body
+    const candidate = await User.findOne({ email })
+    if (candidate) {
+        return res.status(400).json({message: messages.userAlreadyExists})
+    }
+    const hashPassword = bcryptjs.hashSync(password);
+    const userRole = await Role.findOne({value: "user"})
+    const user = new User({email, password: hashPassword, roles: [userRole.value]})
+    await user.save()
 
-            console.log('user registered')
-            passport.authenticate('local', { session: false })(req, res, () => {
-                console.log(`login: ${req.user}`)
-                res.send({ id: req.user.id })
-            })
-        }
-    )
+    return res.json({id:user._id})
 } 
 
-module.exports.login = async (req, res, next) => {
+module.exports.login = async (req, res) => {
     const { error } = loginValidation(req.body)
-    if (error) return res.status(400).send(error.details[0])
+    if (error) return res.status(400).json(error.details[0])
 
-    passport.authenticate('login', { session: false }, (err, user, info) => {
-        if (err) return res.status(500)
-        if (info) return res.status(400).send(info)
-        req.logIn(user, (err) => {
-            if (err) return next(err)
-            console.log(user)
-            const token = jwt.sign({ sub: user._id }, 'TOP_SECRET');
+    const { email, password } = req.body
+    User.findOne({email}).exec().then((user) => {
+        if (!user) return res.status(401).json({ message: messages.badLogin})
 
-            return res.send({ id: user.id, token })
-        })
-    })(req, res, next)
+        const isValid = bcryptjs.compareSync(password, user.password);
+        if (isValid) {
+            const accessToken = generateAccessToken(user._id, user.roles)
+            return res.json({accessToken})
+        } else {
+            return res.status(400).json({ message: messages.badLogin})
+        }
+
+    }).catch((err) => {
+        console.log(err);
+        return res.status(500);
+    })
 }
 
+// не работает
 module.exports.logout = (req, res) => {
-    req.logout()
-    res.send({ user: req.user })
+    // req.logout()
+    return res.send({ user: req.user })
 }
 
 module.exports.getUserData = (req, res) => {
-    res.send({ user: req.user })
+    return res.send({ user: req.user })
 }
 
 // доделать
 module.exports.profile = (req, res) => {
-    res.send({ profile: { user: req.user, orders: {} } })
+    return res.send({ profile: { user: req.user, orders: {} } })
 }
