@@ -26,6 +26,7 @@ module.exports = function () {
         },
         setup: function (wallaby) {
             // process.env.NODE_ENV = 'test'
+            process.env.JWT_SECRET_KEY = 'test'
 
             wallaby.delayStart()
             wallaby.testFramework.ui('tdd')

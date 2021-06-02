@@ -20,7 +20,7 @@ module.exports.get = async (req, res) => {
 
 module.exports.create = async (req, res) => {
     let { name, parentId } = req.body
-    console.log(req.body);
+    // console.log(req.body);
     if (!name) return res.status(400).send({ message: 'имя обязательно' })
     let parentPath = ''
     if (mongoose.Types.ObjectId.isValid(parentId)) {

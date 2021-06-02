@@ -1,12 +1,25 @@
 const { describe, it } = require('mocha')
 const { agent } = require('./init')
-const { getAdmin } = require('./helpers/admin')
+const { getAdminData } = require('./helpers/admin')
+
+const correctUserData = {
+    email: 'CategoryQwe1234@gmail.com',
+    password: 'qweasdzxc1234',
+}
 
 describe('Categories', () => {
     describe('POST /api/categories/create', () => {
         it('Failed to create category witout permission', async () => {
+            let accessToken
+            
+            await agent.post('/api/auth/register').send(correctUserData)
+            await agent.post('/api/auth/login').send(correctUserData).expect((res) => {
+                accessToken = res.body.accessToken
+            }).expect(200)
+
             await agent
                 .post('/api/categories/create')
+                .set("Authorization", `Bearer ${accessToken}`)
                 .send({
                     name: 'новая категория 47',
                 })
@@ -14,17 +27,23 @@ describe('Categories', () => {
                     res.body //?
                     res.body.should.be.a('Object')
                     res.body.should.have.property('message')
-                    res.body.message.should.be.eq('Вы не администратор')
+                    res.body.message.should.be.eq('У вас нет доступа')
                 })
-                .expect(401)
+                .expect(403)
         })
 
         it('Successfully create category', async () => {
-            let { data } = await getAdmin()
-            await agent.post('/api/user/login').send(data).expect(200)
+            let accessToken
+            const adminData = await getAdminData()
+            await agent.post('/api/auth/register').send(adminData)
+            await agent.post('/api/auth/login').send(adminData).expect((res) => {
+                res.body //?
+                accessToken = res.body.accessToken
+            }).expect(200)
 
             await agent
                 .post('/api/categories/create')
+                .set("Authorization", `Bearer ${accessToken}`)
                 .send({
                     name: 'новая категория 47',
                 })
@@ -54,9 +73,18 @@ describe('Categories', () => {
                 .expect(200)
         })
 
-        it('Successfully get categories by parentId', async () => {
+        it('Successfully create categories by parentId', async () => {
+            let accessToken
+            const adminData = await getAdminData()
+            await agent.post('/api/auth/register').send(adminData)
+            await agent.post('/api/auth/login').send(adminData).expect((res) => {
+                res.body //?
+                accessToken = res.body.accessToken
+            }).expect(200)
+
             let { body: coffee } = await agent
                 .post('/api/categories/create')
+                .set("Authorization", `Bearer ${accessToken}`)
                 .send({
                     name: 'Кофе',
                 })
@@ -66,6 +94,7 @@ describe('Categories', () => {
 
             await agent
                 .post('/api/categories/create')
+                .set("Authorization", `Bearer ${accessToken}`)
                 .send({
                     name: 'Эспрессо смеси',
                     parentId: coffee._id,
@@ -74,6 +103,7 @@ describe('Categories', () => {
 
             await agent
                 .post('/api/categories/create')
+                .set("Authorization", `Bearer ${accessToken}`)
                 .send({
                     name: 'Моносорта',
                     parentId: coffee._id,
@@ -82,6 +112,7 @@ describe('Categories', () => {
 
             await agent
                 .post('/api/categories')
+                .set("Authorization", `Bearer ${accessToken}`)
                 .send({ parentId: coffee._id })
                 .expect((res) => {
                     res.body //?

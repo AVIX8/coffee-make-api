@@ -10,7 +10,7 @@ console.log(`process.env.NODE_ENV = ${process.env.NODE_ENV}`)
 async function getMongoURI() {
     let mongoURI
     if (process.env.NODE_ENV === 'test') {
-        mongoose.Promise = Promise
+        //mongoose.Promise = Promise
         mongoURI = process.env.WALLABY_MONGO_URI
         if (!mongoURI) {
             const { MongoMemoryServer } = require('mongodb-memory-server')

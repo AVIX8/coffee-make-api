@@ -1,17 +1,17 @@
 const mongoose = require('mongoose')
 const { connection } = require('../config/database')
 
-const roles = [
-    'user',
-    'admin',
-    'moderator'
-]
-
 const roleSchema = new mongoose.Schema({
     value: {type: String, unique: true},
 })
 
 const Role = connection.model('Role', roleSchema)
+
+const roles = [
+    'user',
+    'admin',
+    'moderator'
+]
 
 roles.forEach((role) => {
     Role.findOne({value: role}).exec().then((data) => {

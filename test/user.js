@@ -17,10 +17,10 @@ const incorrectUserData = {
 }
 
 describe('Users', () => {
-    describe('POST /api/user/register', () => {
+    describe('POST /api/auth/register', () => {
         it('Failed to register with invalid user data', async () => {
             await agent
-                .post('/api/user/register')
+                .post('/api/auth/register')
                 .send(invalidUserData)
                 .expect((res) => {
                     res.body //?
@@ -35,7 +35,7 @@ describe('Users', () => {
 
         it('Successful user registration', async () => {
             await agent
-                .post('/api/user/register')
+                .post('/api/auth/register')
                 .send(correctUserData)
                 .expect((res) => {
                     res.body //?
@@ -46,9 +46,9 @@ describe('Users', () => {
         })
 
         it('Failed to register an already registered user', async () => {
-            await agent.post('/api/user/register').send(correctUserData)
+            await agent.post('/api/auth/register').send(correctUserData)
             await agent
-                .post('/api/user/register')
+                .post('/api/auth/register')
                 .send(correctUserData)
                 .expect((res) => {
                     res.body //?
@@ -62,10 +62,10 @@ describe('Users', () => {
         })
     })
 
-    describe('POST /api/user/login', () => {
+    describe('POST /api/auth/login', () => {
         it('Failed to login without user data', async () => {
             await agent
-                .post('/api/user/login')
+                .post('/api/auth/login')
                 .expect((res) => {
                     res.body //?
                     res.body.should.be.a('Object')
@@ -79,7 +79,7 @@ describe('Users', () => {
 
         it('Failed to login with incorrect user data', async () => {
             await agent
-                .post('/api/user/login')
+                .post('/api/auth/login')
                 .send(incorrectUserData)
                 .expect((res) => {
                     res.body //?
@@ -89,12 +89,12 @@ describe('Users', () => {
                         'Пароль или адрес электронной почты неверны'
                     )
                 })
-                .expect(400)
+                .expect(403)
         })
 
         it('Successful login', async () => {
             await agent
-                .post('/api/user/login')
+                .post('/api/auth/login')
                 .send(correctUserData)
                 .expect((res) => {
                     res.body //?
@@ -108,11 +108,9 @@ describe('Users', () => {
 
     describe('GET /api/user/getUserData', () => {
         it('Failed (unauthorized)', async () => {
-            let logout = await agent.get('/api/user/logout').expect(200)
-            logout.body //?
-
             await agent
                 .get('/api/user/getUserData')
+                .set('Authorization', '')
                 .expect((res) => {
                     res.body //?
                     res.body.should.be.a('Object')
@@ -121,13 +119,24 @@ describe('Users', () => {
         })
 
         it('Successfully get user data', async () => {
-            await agent.post('/api/user/register').send(correctUserData)
-            await agent.get('/api/user/logout').expect(200)
-
-            let accessToken
+            let accessToken, refreshToken
+            await agent.post('/api/auth/register').send(correctUserData)
 
             await agent
-                .post('/api/user/login')
+                .post('/api/auth/login')
+                .send(correctUserData)
+                .expect((res) => {
+                    refreshToken = res.body.refreshToken
+                })
+                .expect(200)
+
+            await agent
+                .post('/api/auth/logout')
+                .send({ refreshToken })
+                .expect(200)
+
+            await agent
+                .post('/api/auth/login')
                 .send(correctUserData)
                 .expect((res) => {
                     res.body //?
@@ -135,7 +144,7 @@ describe('Users', () => {
                 })
                 .expect(200)
 
-            console.log(accessToken)
+            // console.log(accessToken)
 
             await agent
                 .set('Authorization', `Bearer ${accessToken}`)

@@ -1,4 +1,5 @@
 const express = require('express')
+// const jwt = require('express-jwt')
 
 const dotenv = require('dotenv')
 
@@ -9,6 +10,7 @@ const mongoose = require('mongoose')
 const { connection } = require('./src/config/database')
 
 //Routes
+const authRoute = require('./src/routes/auth')
 const userRoute = require('./src/routes/user')
 const categoryRoute = require('./src/routes/categories')
 const productsRoute = require('./src/routes/products')
@@ -23,29 +25,21 @@ connection.once('open', () => {
     })
 })
 
-app.use(morgan('dev'))
+if (process.env.NODE_ENV != 'test' )
+    app.use(morgan('dev'))
 
 app.use(cors())
 
 // Middlewares
-app.use(express.json());
-app.use(express.urlencoded({extended: true}));
-
-// app.use((req, res, next) => {
-//     console.log('======== Session & User ========')
-//     console.log(req.session)
-//     console.log(`User: ${req.user}`)
-//     console.log('======== Session & User ========')
-//     next()
-// })
+app.use(express.json())
+app.use(express.urlencoded({ extended: true }))
 
 // Routes
+app.use('/api/auth', authRoute)
 app.use('/api/user', userRoute)
 app.use('/api/categories', categoryRoute)
 app.use('/api/products', productsRoute)
 app.use('/api/storage', storageRoute)
-
-// app.use('/storage', express.static('./storage'))
 
 const port = process.env.PORT ?? 4000
 app.listen(port, () => {
