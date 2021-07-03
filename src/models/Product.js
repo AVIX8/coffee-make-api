@@ -2,7 +2,7 @@ const mongoose = require('mongoose')
 const { connection } = require('../config/database')
 
 const productSchema = new mongoose.Schema({
-    name: {
+    title: {
         type: String,
         required: true,
     },
@@ -11,7 +11,7 @@ const productSchema = new mongoose.Schema({
         required: true,
         unique: true,
     },
-    desc: {
+    descr: {
         type: String,
     },
     brand: {
@@ -21,11 +21,14 @@ const productSchema = new mongoose.Schema({
         type: [String],
     },
     properties: {
-        type: Object
+        type: Object,
     },
     choiceProperty: {
         type: Object,
     },
+    category: {
+        type: String,
+    }
 })
 
 const Product = connection.model('Product', productSchema) 

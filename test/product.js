@@ -7,9 +7,9 @@ const correctUserData = {
     password: 'qweasdzxc1234',
 }
 
-const FRESH_COFFEE_1 = {
-    title: 'FRESH COFFEE 1',
-    slug: 'FRESH-COFFEE-1',
+const FRESH_COFFEE_PLATINO = {
+    title: 'FRESH COFFEE PLATINO',
+    slug: 'FRESH-COFFEE-PLATINO',
     descr: 'Кофе из респ. Гондурас это классический представитель арабики из Центральной Америки. регион: Копан, Окотепеке. Высота произрастания: 1300 - 1500 м. Обладает приятным шоколадным оттенком и сильным телом, хорошей насыщенностью и балансом, идеально подходит для сбалансированного эспрессо.',
     category: '/кофе/моносорта',
     brand: '',
@@ -44,9 +44,9 @@ const FRESH_COFFEE_1 = {
     },
 }
 
-const FRESH_COFFEE_2 = {
-    title: 'FRESH COFFEE 2',
-    slug: 'FRESH-COFFEE-2',
+const FRESH_COFFEE_GOOD_CUP = {
+    title: 'FRESH COFFEE GOOD CUP',
+    slug: 'FRESH-COFFEE-GOOD-CUP',
     descr: 'Зерно из Бразилии натуральной (сухой) обработки, регионы: Сан-Паулу (Сантос) и Минас-Жерайс (Минас) растет на высоте 600 - 1300 метров над уровнем моря. Богатый букет, имеющий полный насыщенный вкус, легкий характерный аромат бурбона и долгое послевкусие ореха.',
     category: '/кофе/моносорта',
     brand: '',
@@ -81,34 +81,20 @@ const FRESH_COFFEE_2 = {
     },
 }
 
-const createCategory = async (data) => {
+const productMustExist = async (data) => {
     const adminData = await getAdminData()
-    let { body: category } = await agent
-        .post('/api/categories/create')
-        .set('Authorization', `Bearer ${ adminData.accessToken }`)
-        .send(data)
-        .expect((res) => {
-            res.body //?
-        })
-    return category
-}
-
-const createProduct = async (data) => {
-    const adminData = await getAdminData()
-    let { body: product } = await agent
+    await agent
         .post('/api/products/create')
         .set('Authorization', `Bearer ${adminData.accessToken}`)
         .send(data)
         .expect((res) => {
             res.body //?
         })
-    return product
 }
 
-describe('Categories', () => {
-    
-    describe('POST /api/categories/create', () => {
-        it('User can not create category witout permission', async () => {
+describe('Products', () => {
+    describe('POST /api/products/create', () => {
+        it('User can not create product without permission', async () => {
             let accessToken
 
             await agent.post('/api/auth/register').send(correctUserData)
@@ -116,16 +102,14 @@ describe('Categories', () => {
                 .post('/api/auth/login')
                 .send(correctUserData)
                 .expect((res) => {
-                    accessToken = res.body.accessToken
+                    accessToken = res.body.accessToken //?
                 })
                 .expect(200)
 
             await agent
-                .post('/api/categories/create')
+                .post('/api/products/create')
                 .set('Authorization', `Bearer ${accessToken}`)
-                .send({
-                    title: 'новая категория 47',
-                })
+                .send(FRESH_COFFEE_PLATINO)
                 .expect((res) => {
                     res.body //?
                     res.body.should.be.a('Object')
@@ -135,132 +119,87 @@ describe('Categories', () => {
                 .expect(403)
         })
 
-        it('Admin can create category', async () => {
+        it('Admin can create product', async () => {
             const adminData = await getAdminData()
 
             await agent
-                .post('/api/categories/create')
+                .post('/api/products/create')
                 .set('Authorization', `Bearer ${adminData.accessToken}`)
-                .send({
-                    title: 'новая категория 47',
-                })
+                .send(FRESH_COFFEE_PLATINO)
                 .expect((res) => {
                     res.body //?
                     res.body.should.be.a('Object')
                     res.body.should.have.property('_id')
                     res.body.should.have.property('title')
-                    res.body.should.have.property('parent')
                     res.body.should.have.property('category')
                 })
                 .expect(200)
         })
 
-        it('Admin can create subcategory by parentId', async () => {
+        it('Admin can not create a product with already existing slug', async () => {
             const adminData = await getAdminData()
 
-            let category1 = await createCategory({
-                title: 'категория 1',
-            })
-            category1 //?
-
             await agent
-                .post('/api/categories/create')
+                .post('/api/products/create')
                 .set('Authorization', `Bearer ${adminData.accessToken}`)
-                .send({
-                    title: 'категория 2',
-                    parentId: category1._id,
-                })
+                .send(FRESH_COFFEE_GOOD_CUP)
                 .expect((res) => {
                     res.body //?
-                    res.body.should.be.a('Object')
-                    res.body.should.have.property('_id')
-                    res.body.should.have.property('title')
-                    res.body.should.have.property('parent')
-                    res.body.should.have.property('category')
                 })
                 .expect(200)
-        })
-    })
-
-    describe('POST /api/categories', () => {
-        it('User can get subcategories by parentPath', async () => {
-            let { _id } = await createCategory({ title: 'lolar' })
-            await createCategory({ title: 'q', parentId: _id })
-            await createCategory({ title: 'w', parentId: _id })
-            await createCategory({ title: 'e', parentId: _id })
-            
-            await agent
-                .post('/api/categories')
-                .send({ parentPath: '/lolar' })
-                .expect((res) => {
-                    res.body //?
-                    res.body.should.be.a('Array')
-                    res.body.length.should.be.eq(3)
-                })
-                .expect(200)
-        })
-
-        it('User can get categories by parentId', async () => {
-            let { _id } = await createCategory({ title: 'Кофе' })
-            await createCategory({ title: 'Эспрессо смеси',parentId: _id })
-            await createCategory({ title: 'Моносорта',parentId: _id })
 
             await agent
-                .post('/api/categories')
-                .set('Authorization', '')
-                .send({ parentId: _id })
-                .expect((res) => {
-                    res.body //?
-                    res.body.should.be.a('Array')
-                    res.body.should.have.length(2)
-                })
-                .expect(200)
-        })
-
-        it('Failed to get categories by invalid parentId', async () => {
-            await agent
-                .post('/api/categories')
-                .send({ parentId: '5ff323a40db1542dc0e4c793' })
+                .post('/api/products/create')
+                .set('Authorization', `Bearer ${adminData.accessToken}`)
+                .send(FRESH_COFFEE_GOOD_CUP)
                 .expect((res) => {
                     res.body //?
                     res.body.should.be.a('Object')
                     res.body.should.have.property('message')
-                    res.body.message.should.be.eq(
-                        'неверный идентификатор категории'
-                    )
                 })
                 .expect(400)
         })
     })
 
-    describe('POST /api/categories/getProducts', () => {
-        it('User get 404 for non-existent category', async () => {
-            const category = '/non/existent/category'
+    describe('POST /api/products/getBySlug', () => {
+        it('User can get product by slug', async () => {
+            await productMustExist(FRESH_COFFEE_PLATINO)
 
             await agent
-                .post('/api/categories/getProducts')
-                .send({ category })
+                .post('/api/products/getBySlug')
+                .set('Authorization', '')
+                .send({ slug: FRESH_COFFEE_PLATINO.slug })
                 .expect((res) => {
                     res.body //?
-                    res.body.should.be.a('Object')
+                    res.body.should.have.property('title')
+                })
+                .expect(200)
+        })
+
+        it('User get 404 for non-existent slug', async () => {
+            await productMustExist(FRESH_COFFEE_PLATINO)
+
+            await agent
+                .post('/api/products/getBySlug')
+                .set('Authorization', '')
+                .send({ slug: 'non-existent-slug' })
+                .expect((res) => {
+                    res.body //?
                     res.body.should.have.property('message')
-                    res.body.message.should.be.eq('Не удалось найти товары')
                 })
                 .expect(404)
         })
+    })
 
+    describe('POST /api/products/getByCategory', () => {
         it('User can get products by category', async () => {
-            let { _id } = await createCategory({title: 'parentCategory' })
-            let { category } = await createCategory({title: 'subCategory', parentId: _id })
-            
-            category //?
-
-            await createProduct({...FRESH_COFFEE_1, category}) //?
-            await createProduct({...FRESH_COFFEE_2, category}) //?
+            await productMustExist(FRESH_COFFEE_PLATINO)
+            await productMustExist(FRESH_COFFEE_GOOD_CUP)
 
             await agent
-                .post('/api/categories/getProducts')
-                .send({ category })
+                .post('/api/products/getByCategory')
+                .set('Authorization', '')
+                .send({ category: FRESH_COFFEE_PLATINO.category })
                 .expect((res) => {
                     res.body //?
                     res.body.should.be.a('Array')
@@ -269,8 +208,18 @@ describe('Categories', () => {
                 .expect(200)
         })
 
-        // it('User can get all products in category subtree', async  () => {
+        it('User get 404 for non-existent category', async () => {
+            await productMustExist(FRESH_COFFEE_PLATINO)
 
-        // })
+            await agent
+                .post('/api/products/getByCategory')
+                .set('Authorization', '')
+                .send({ category: 'non/existent/category' })
+                .expect((res) => {
+                    res.body //?
+                    res.body.should.have.property('message')
+                })
+                .expect(404)
+        })
     })
 })

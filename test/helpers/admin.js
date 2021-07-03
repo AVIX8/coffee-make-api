@@ -1,5 +1,6 @@
 const User = require('../../src/models/User')
 //const Role = require('../../src/models/Role')
+const jwt = require('jsonwebtoken')
 
 const superTest = require('supertest')
 const app = require('../../app.js')
@@ -14,17 +15,17 @@ module.exports.promoteToAdmin = async (email) => {
 module.exports.getAdminData = async () => {
     let data = {
         email: 'admin3459377766@test.com',
-        password: '5484078819',
+        password: '5484078819'
     }
-
-    let user = await User.findOne({email: data.email})
-    // console.log(user);
-    if (!user) {
+    if (!this.accessToken) {
         await agent.post('/api/auth/register').send(data).expect(200)
         await this.promoteToAdmin(data.email)
+    
+        this.accessToken = jwt.sign(
+            { ...data, roles: ['user', 'admin']},
+            process.env.JWT_SECRET_KEY,
+            { expiresIn: '1d' }
+        )
     }
-
-    user = await User.findOne({email: data.email})
-    // console.log(user);
-    return data
+    return { data, accessToken: this.accessToken }
 }

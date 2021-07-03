@@ -20,7 +20,7 @@ module.exports.get = (req, res) => {
 
 module.exports.getImageById = (req, res) => {
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-        return res.status(404)
+        return res.status(404).send()
     }
     let _id = mongoose.Types.ObjectId(req.params.id)
     connection.db.collection('storage.files').findOne({ _id }, (err, file) => {

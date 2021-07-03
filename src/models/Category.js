@@ -2,7 +2,7 @@ const mongoose = require('mongoose')
 const { connection } = require( "../config/database.js")
 
 const categorySchema = new mongoose.Schema({
-    name: {
+    title: {
         type: String,
     },
     parent: {

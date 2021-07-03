@@ -46,7 +46,8 @@ module.exports.hasRole = (roles) => {
             }
             next();
         } catch (e) {
-            console.log(e)
+            // console.log(e)
+            e //?
             return res.status(401).json({message: "Пользователь не авторизован"})
         }
     }

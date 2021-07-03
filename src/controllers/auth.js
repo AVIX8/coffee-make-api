@@ -41,16 +41,18 @@ module.exports.register = async (req, res) => {
 module.exports.login = async (req, res) => {
     const { error } = loginValidation(req.body)
     if (error) return res.status(400).json(error.details[0])
-
+    
     const { email, password } = req.body
     const user = await User.findOne({ email })
-
+    
     if (!user || !bcryptjs.compareSync(password, user.password))
-        return res.status(403).json({ message: messages.badLogin })
-
+    return res.status(403).json({ message: messages.badLogin })
+    
     const accessToken = issueAcessToken(user)
     const refreshToken = uuid()
-    Session.create({ token: refreshToken, user, ip: '4.4.4.4' })
+    const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress
+
+    Session.create({ token: refreshToken, user, ip })
     return res.json({ accessToken, refreshToken })
 }
 
@@ -65,8 +67,10 @@ module.exports.refresh = async (req, res) => {
 
     const accessToken = issueAcessToken(session.user)
     const refreshToken = uuid()
+    const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress
+    console.log(ip)
 
-    Session.create({ token: refreshToken, user: session.user, ip: '4.4.4.4' })
+    Session.create({ token: refreshToken, user: session.user, ip })
     return res.json({ accessToken, refreshToken })
 }
 

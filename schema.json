@@ -1,47 +1,55 @@
 {
-    "Item": {
+    "item": {
         "_id": "054VA72303012P",
-        "desc": "Give your dressy look a lift with these women's Kate high-heel shoes by Metaphor. These playful peep-toe pumps feature satin-wrapped stiletto heels and chiffon pompoms at the toes. Rhinestones on each of the silvertone buckles add just a touch of sparkle to these shoes for a flirty footwear look that's made for your next night out.",
-        "name": "Women's Kate Ivory Peep-Toe Stiletto Heel",
-        "category": "/кофе/моносорта",
-        "brand": "Metaphor",
-        "imgs": [
-            "http://c.shld.net/rpx/i/s/i/spin/image/spin_prod_967112812",
-            "http://c.shld.net/rpx/i/s/i/spin/image/spin_prod_945877912"
-        ],
-
-        "properties": {
-            "кислотность": {
-                "maxValue": 5,
-                "value": 3
+        "title": "Mild",
+        "descr": "Смесь арабики с ароматом сладкой карамели, какао и бисквитной выпечки (сладкий).",
+        "imgs": ["hz1", "hz2"],
+        "slug": "mild",
+        "optionTitle": "Масса (гр)",
+        "options": [
+            {
+                "price": 1300,
+                "value": 1000
             },
-            "плотность": {
-                "maxValue": 5,
-                "value": 2
+            {
+                "price": 300,
+                "value": 250
             }
-        },
-
-        "choiceProperty": {
-            "name": "Масса (гр)",
-            "variants": [
-                {
-                    "price": 260.0,
-                    "option": 250
-                },
-                {
-                    "price": 940.0,
-                    "option": 1000
-                }
-            ]
-        }
+        ],
+        "characteristics": [
+            {
+                "title": "Обжарка",
+                "value": "Средняя"
+            },
+            {
+                "title": "Кислотность",
+                "value": "Средняя"
+            },
+            {
+                "title": "Сорт",
+                "value": "100% арабика"
+            },
+            {
+                "title": "Купаж",
+                "value": "Смесь"
+            },
+            {
+                "title": "География",
+                "value": "Бразилия, Колумбия, Гватемала."
+            }
+        ]
     },
-
     //from clien
     "cart": [
         {
             "_id": "054VA72303012P",
             "quantity": 8,
-            "option": 250
+            "option": 1000
+        },
+        {
+            "_id": "054VA72303012P",
+            "quantity": 8,
+            "option": 350
         },
         {
             "_id": "0151651",

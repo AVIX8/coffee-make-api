@@ -1,5 +1,6 @@
 const mongoose = require('mongoose')
 const Category = require('../models/Category.js')
+const Product = require('../models/Product.js')
 
 module.exports.get = async (req, res) => {
     let { parentPath, parentId } = req.body
@@ -15,13 +16,25 @@ module.exports.get = async (req, res) => {
     let categories = await Category.find({
         parent: new RegExp('^' + parentPath + '$'),
     })
-    return res.send({ categories })
+    return res.send(categories)
+}
+
+module.exports.getProducts = async (req, res) => {
+    let { category, all, skip } = req.body
+    let products = await Product.find({
+        category: new RegExp('^' + category + (all ? '' : '$')),
+    }).skip(skip).limit(50)
+    if (!products || !products.length)
+        return res
+            .status(404)
+            .send({ message: 'Не удалось найти товары' })
+    return res.send(products)
 }
 
 module.exports.create = async (req, res) => {
-    let { name, parentId } = req.body
-    // console.log(req.body);
-    if (!name) return res.status(400).send({ message: 'имя обязательно' })
+    let { title, parentId } = req.body
+
+    if (!title) return res.status(400).send({ message: 'название категории обязательно' })
     let parentPath = ''
     if (mongoose.Types.ObjectId.isValid(parentId)) {
         let parent = await Category.findById(parentId)
@@ -31,9 +44,9 @@ module.exports.create = async (req, res) => {
                 .send({ message: 'неверный идентификатор категории' })
         parentPath = parent.category
     }
-    let category = parentPath + '/' + name
+    let category = parentPath + '/' + title
     let cat = new Category({
-        name,
+        title,
         parent: parentPath,
         category,
         image: req.file?.id,
@@ -73,7 +86,7 @@ module.exports.update = async (req, res) => {
         await Category.findOneAndUpdate({_id: category._id}, {image: req.file?.id})
     }
 
-    if (req.body.name && category.name != req.body.name) {
+    if (req.body.title && category.title != req.body.title) {
 
         
 
@@ -95,7 +108,6 @@ module.exports.del = async (req, res) => {
     let subcategories = await Category.find({
         parent: new RegExp('^' + category.category + '$'),
     })
-
     if (subcategories.length) {
         return res
             .status(400)
@@ -104,7 +116,13 @@ module.exports.del = async (req, res) => {
             })
     }
 
-    //нужно убедиться, что ни один товары не принадлежит этой категории
+    let products = await Product.find({
+        parent: new RegExp('^' + category.category + '$'),
+    })
+    if (products.length)
+        return res
+            .status(400)
+            .send({ message: 'у данной категории есть товары' })
 
     let deletedCategory = await Category.findByIdAndDelete(category._id)
     
