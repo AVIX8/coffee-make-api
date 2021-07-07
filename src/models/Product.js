@@ -14,20 +14,20 @@ const productSchema = new mongoose.Schema({
     descr: {
         type: String,
     },
-    brand: {
-        type: String,
-    },
     imgs: {
-        type: [String],
-    },
-    properties: {
-        type: Object,
-    },
-    choiceProperty: {
-        type: Object,
+        type: [{ type: String }],
     },
     category: {
         type: String,
+    },
+    characteristics: {
+        type: Array,
+    },
+    optionTitle: {
+        type: String,
+    },
+    options: {
+        type: Array,
     }
 })
 

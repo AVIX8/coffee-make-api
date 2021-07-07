@@ -1,6 +1,6 @@
 const { Router } = require( 'express')
 const { hasRole } = require('../middlewares/auth')
-const { create, getBySlug, getByCategory } = require('../controllers/product')
+const { create, getBySlug, getByCategory, get } = require('../controllers/product')
 
 const router = Router()
 
@@ -9,8 +9,10 @@ router.post('/', async (req, res) => {
     res.send({ somedata: 'lolar' })
 })
 
+router.post('/get', get)
 router.post('/getBySlug', getBySlug)
 router.post('/getByCategory', getByCategory)
+
 router.post('/create', hasRole(['admin']), create)
 
 module.exports = router

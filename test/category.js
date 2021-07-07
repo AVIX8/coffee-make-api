@@ -85,7 +85,7 @@ const createCategory = async (data) => {
     const adminData = await getAdminData()
     let { body: category } = await agent
         .post('/api/categories/create')
-        .set('Authorization', `Bearer ${ adminData.accessToken }`)
+        .set('Authorization', `Bearer ${adminData.accessToken}`)
         .send(data)
         .expect((res) => {
             res.body //?
@@ -106,7 +106,6 @@ const createProduct = async (data) => {
 }
 
 describe('Categories', () => {
-    
     describe('POST /api/categories/create', () => {
         it('User can not create category witout permission', async () => {
             let accessToken
@@ -150,7 +149,7 @@ describe('Categories', () => {
                     res.body.should.have.property('_id')
                     res.body.should.have.property('title')
                     res.body.should.have.property('parent')
-                    res.body.should.have.property('category')
+                    res.body.should.have.property('path')
                 })
                 .expect(200)
         })
@@ -176,7 +175,7 @@ describe('Categories', () => {
                     res.body.should.have.property('_id')
                     res.body.should.have.property('title')
                     res.body.should.have.property('parent')
-                    res.body.should.have.property('category')
+                    res.body.should.have.property('path')
                 })
                 .expect(200)
         })
@@ -188,7 +187,7 @@ describe('Categories', () => {
             await createCategory({ title: 'q', parentId: _id })
             await createCategory({ title: 'w', parentId: _id })
             await createCategory({ title: 'e', parentId: _id })
-            
+
             await agent
                 .post('/api/categories')
                 .send({ parentPath: '/lolar' })
@@ -200,38 +199,76 @@ describe('Categories', () => {
                 .expect(200)
         })
 
-        it('User can get categories by parentId', async () => {
-            let { _id } = await createCategory({ title: 'Кофе' })
-            await createCategory({ title: 'Эспрессо смеси',parentId: _id })
-            await createCategory({ title: 'Моносорта',parentId: _id })
+        it('User get empty Array for invalid parentPath', async () => {
+            await agent
+                .post('/api/categories')
+                .send({ parentPath: 'lolar/komar/omar' })
+                .expect((res) => {
+                    res.body //?
+                    res.body.should.be.a('Array')
+                    res.body.length.should.be.eq(0)
+                })
+                .expect(200)
+        })
+    })
+
+    describe('POST /api/categories/update', () => {
+        it('Admin can update category with products', async () => {
+            let cat1 = await createCategory({title: 'level1' })
+            let cat2 = await createCategory({title: 'level2', parentId: cat1._id})
+            let cat3 = await createCategory({title: 'level3', parentId: cat2._id}) //?
+
+            
+            let product2 = await createProduct({
+                title: 'categotyUpdateTest2',
+                slug: 'categoty-update-test2',
+                category: cat2.path,
+            }) //?
+            
+            let product3 = await createProduct({
+                title: 'categotyUpdateTest3',
+                slug: 'categoty-update-test3',
+                category: cat3.path,
+            }) //?
+            
+            const adminData = await getAdminData()
+            await agent
+                .post('/api/categories/update')
+                .set('Authorization', `Bearer ${adminData.accessToken}`)
+                .send({ id: cat2._id, title: 'newLevel' })
+                .expect(200)
 
             await agent
                 .post('/api/categories')
                 .set('Authorization', '')
-                .send({ parentId: _id })
+                .send({ parentPath: '/level1/newLevel' })
                 .expect((res) => {
                     res.body //?
-                    res.body.should.be.a('Array')
-                    res.body.should.have.length(2)
+                    res.body[0].path.should.be.eq('/level1/newLevel/level3')
+                })
+                .expect(200)
+
+            await agent
+                .post('/api/products/getBySlug')
+                .send({ slug: product2.slug })
+                .expect((res) => {
+                    res.body //?
+                    res.body.category.should.be.eq('/level1/newLevel')
+                })
+                .expect(200)
+            
+            await agent
+                .post('/api/products/getBySlug')
+                .send({ slug: product3.slug })
+                .expect((res) => {
+                    res.body //?
+                    res.body.category.should.be.eq('/level1/newLevel/level3')
                 })
                 .expect(200)
         })
-
-        it('Failed to get categories by invalid parentId', async () => {
-            await agent
-                .post('/api/categories')
-                .send({ parentId: '5ff323a40db1542dc0e4c793' })
-                .expect((res) => {
-                    res.body //?
-                    res.body.should.be.a('Object')
-                    res.body.should.have.property('message')
-                    res.body.message.should.be.eq(
-                        'неверный идентификатор категории'
-                    )
-                })
-                .expect(400)
-        })
     })
+
+
 
     describe('POST /api/categories/getProducts', () => {
         it('User get 404 for non-existent category', async () => {
@@ -250,17 +287,20 @@ describe('Categories', () => {
         })
 
         it('User can get products by category', async () => {
-            let { _id } = await createCategory({title: 'parentCategory' })
-            let { category } = await createCategory({title: 'subCategory', parentId: _id })
-            
-            category //?
+            let { _id } = await createCategory({ title: 'parentCategory' })
+            let category = await createCategory({
+                title: 'subCategory',
+                parentId: _id,
+            })
 
-            await createProduct({...FRESH_COFFEE_1, category}) //?
-            await createProduct({...FRESH_COFFEE_2, category}) //?
+            category //? 
+
+            await createProduct({ ...FRESH_COFFEE_1, category: category.path }) //?
+            await createProduct({ ...FRESH_COFFEE_2, category: category.path }) //?
 
             await agent
                 .post('/api/categories/getProducts')
-                .send({ category })
+                .send({ path: category.path })
                 .expect((res) => {
                     res.body //?
                     res.body.should.be.a('Array')
@@ -269,8 +309,32 @@ describe('Categories', () => {
                 .expect(200)
         })
 
-        // it('User can get all products in category subtree', async  () => {
+        it('User can get all products in category subtree', async  () => {
+            let cat1 = await createCategory({title: 'subtree-level1' })
+            let cat2 = await createCategory({title: 'subtree-level2', parentId: cat1._id})
+            let cat3 = await createCategory({title: 'subtree-level3', parentId: cat2._id})
 
-        // })
+            await createProduct({
+                title: 'categotySubtreeTest2',
+                slug: 'categoty-subtree-test2',
+                category: cat2.path,
+            }) //?
+            
+            await createProduct({
+                title: 'categotySubtreeTest3',
+                slug: 'categoty-subtree-test3',
+                category: cat3.path,
+            }) //?
+
+            await agent
+                .post('/api/categories/getProducts')
+                .send({ path: cat1.path, all: true })
+                .expect((res) => {
+                    res.body //?
+                    res.body.should.be.a('Array')
+                    res.body.length.should.be.eq(2)
+                })
+                .expect(200)
+        })
     })
 })

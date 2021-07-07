@@ -8,7 +8,7 @@ const messages = {
 }
 
 module.exports.getBySlug = async (req, res) => {
-    let { slug } = req.body
+    let { slug } = req.body //?
 
     let product = await Product.findOne({ slug })
     if (!product)
@@ -30,12 +30,11 @@ module.exports.getByCategory = async (req, res) => {
 }
 
 module.exports.create = async (req, res) => {
-    const data = req.body
-    const slug = data.slug
+    const { slug, descr, title, category } = req.body
     if (!slug || slug != slugify(slug))
         return res.status(400).json(messages.invalidSlug)
     let prod = new Product({
-        ...data,
+        title, slug, descr, category
     })
 
     prod.save()
@@ -54,4 +53,13 @@ module.exports.create = async (req, res) => {
                 message: message ?? 'не удалось создать товар',
             })
         })
+}
+
+module.exports.get = async (req, res) => {
+    let { filters, skip } = req.body
+    let products = await Product.find(filters).skip(skip).limit(50)
+
+    if (!products || !products.length)
+        return res.status(404).send({ message: 'Не удалось найти товары' })
+    return res.send(products)
 }

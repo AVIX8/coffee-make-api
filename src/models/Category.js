@@ -5,13 +5,13 @@ const categorySchema = new mongoose.Schema({
     title: {
         type: String,
     },
+    path: {
+        type: String,
+        unique: true,
+    },
     parent: {
         type: String,
         default: '/',
-    },
-    category: {
-        type: String,
-        unique: true,
     },
     image: {
         type: String,
