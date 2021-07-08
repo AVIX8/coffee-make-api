@@ -1,9 +1,14 @@
 // const mongoose = require('mongoose')
 const Product = require('../models/Product.js')
+const Category = require('../models/Category.js')
 const slugify = require('slugify')
 
 const messages = {
     invalidSlug: 'Не корректный slug',
+    badСategory: 'Такой категории не существует',
+    invalidProductId: 'Неверный идентификатор товара',
+    productNotFound: 'Не удалось найти товар',
+    productsNotFound: 'Не удалось найти товары',
     // badLogin: 'Пароль или адрес электронной почты неверны',
 }
 
@@ -14,7 +19,7 @@ module.exports.getBySlug = async (req, res) => {
     if (!product)
         return res
             .status(404)
-            .send({ message: 'Не удалось найти товар' })
+            .send({ message: messages.productNotFound })
     return res.json(product)
 }
 
@@ -25,14 +30,39 @@ module.exports.getByCategory = async (req, res) => {
     if (!products || !products.length)
         return res
             .status(404)
-            .send({ message: 'Не удалось найти товар' })
+            .send({ message: messages.productsNotFound })
     return res.json(products)
+}
+
+module.exports.del = async (req, res) => {
+    let product = await Product.findById(req.body.id)
+    if (!product) {
+        return res
+            .status(400)
+            .send({ message: messages.invalidProductId })
+    }
+    let deletedProduct = await Product.findByIdAndDelete(product._id)
+
+    // нужно удалять картинки
+    // if (product.imgs) {
+    //     const imageId = new product.Types.ObjectId(product.image)
+    //     req.app.locals.bucket.delete(imageId)
+    // }
+
+    return res.send({ deletedProduct })
 }
 
 module.exports.create = async (req, res) => {
     const { slug, descr, title, category } = req.body
     if (!slug || slug != slugify(slug))
-        return res.status(400).json(messages.invalidSlug)
+        return res.status(400).json({ message: messages.invalidSlug })
+    
+    if (!category)
+        return res.status(400).json({ message: messages.badСategory })
+    let cat = await Category.findOne({ path: category })
+    if (!cat)
+        return res.status(400).json({ message: messages.badСategory })
+    
     let prod = new Product({
         title, slug, descr, category
     })
@@ -60,6 +90,6 @@ module.exports.get = async (req, res) => {
     let products = await Product.find(filters).skip(skip).limit(50)
 
     if (!products || !products.length)
-        return res.status(404).send({ message: 'Не удалось найти товары' })
+        return res.status(404).send({ message: messages.productsNotFound })
     return res.send(products)
 }

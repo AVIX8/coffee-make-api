@@ -88,12 +88,21 @@ module.exports.update = async (req, res) => {
             { image: req.file?.id }
         )
     }
-
     let newTitle = req.body.title //?
     if (newTitle && newTitle != category.title) {
+        category.title = newTitle
+        await category.save()
+
         let newFullPath =
             category.path.slice(0, category.path.lastIndexOf('/') + 1) +
             newTitle
+
+        let categories = await Category.find({path: new RegExp('^' + category.path) }) //?
+        await Promise.all(categories.map(c => {
+            c.parent = c.parent.replace(category.path, newFullPath);
+            c.path = c.path.replace(category.path, newFullPath);
+            return c.save()
+        }))
 
         let products = await Product.find({category: new RegExp('^' + category.path) }) //?
         await Promise.all(products.map(p => {
@@ -101,14 +110,9 @@ module.exports.update = async (req, res) => {
                 return p.save()
             }))
         
-        let categories = await Category.find({path: new RegExp('^' + category.path) }) //?
-        await Promise.all(categories.map(c => {
-            c.parent = c.parent.replace(category.path, newFullPath);
-            c.path = c.parent+'/'+c.title
-            return c.save()
-        }))
+        
     }
-    return res.send()
+    return res.send(category)
 }
 
 module.exports.del = async (req, res) => {

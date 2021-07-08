@@ -11,7 +11,7 @@ router.post('/', get)
 router.post('/getProducts', getProducts)
 
 router.post('/create', hasRole(['admin']), upload.single('image'), create)
-router.post('/update', hasRole(['admin']), update)
+router.post('/update', hasRole(['admin']), upload.single('image'), update)
 router.post('/delete', hasRole(['admin']), del)
 
 module.exports = router

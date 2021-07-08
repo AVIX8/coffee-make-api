@@ -81,15 +81,28 @@ const FRESH_COFFEE_GOOD_CUP = {
     },
 }
 
-const productMustExist = async (data) => {
+const createCategory = async (data) => {
     const adminData = await getAdminData()
-    await agent
+    let { body: category } = await agent
+        .post('/api/categories/create')
+        .set('Authorization', `Bearer ${adminData.accessToken}`)
+        .send(data)
+        .expect((res) => {
+            res.body //?
+        })
+    return category
+}
+
+const createProduct = async (data) => {
+    const adminData = await getAdminData()
+    let { body: product } = await agent
         .post('/api/products/create')
         .set('Authorization', `Bearer ${adminData.accessToken}`)
         .send(data)
         .expect((res) => {
             res.body //?
         })
+    return product
 }
 
 describe('Products', () => {
@@ -120,8 +133,10 @@ describe('Products', () => {
         })
 
         it('Admin can create product', async () => {
-            const adminData = await getAdminData()
+            let { _id: parentId } = await createCategory({title: 'кофе'})
+            await createCategory({title: 'моносорта', parentId }) //?
 
+            const adminData = await getAdminData()
             await agent
                 .post('/api/products/create')
                 .set('Authorization', `Bearer ${adminData.accessToken}`)
@@ -137,8 +152,10 @@ describe('Products', () => {
         })
 
         it('Admin can not create a product with already existing slug', async () => {
+            let { _id: parentId } = await createCategory({title: 'кофе'})
+            await createCategory({title: 'моносорта', parentId }) //?
+            
             const adminData = await getAdminData()
-
             await agent
                 .post('/api/products/create')
                 .set('Authorization', `Bearer ${adminData.accessToken}`)
@@ -163,7 +180,9 @@ describe('Products', () => {
 
     describe('POST /api/products/getBySlug', () => {
         it('User can get product by slug', async () => {
-            await productMustExist(FRESH_COFFEE_PLATINO)
+            let { _id: parentId } = await createCategory({title: 'кофе'})
+            await createCategory({title: 'моносорта', parentId }) //?
+            await createProduct(FRESH_COFFEE_PLATINO)
 
             await agent
                 .post('/api/products/getBySlug')
@@ -177,7 +196,9 @@ describe('Products', () => {
         })
 
         it('User get 404 for non-existent slug', async () => {
-            await productMustExist(FRESH_COFFEE_PLATINO)
+            let { _id: parentId } = await createCategory({title: 'кофе'})
+            await createCategory({title: 'моносорта', parentId }) //?
+            await createProduct(FRESH_COFFEE_PLATINO)
 
             await agent
                 .post('/api/products/getBySlug')
@@ -193,8 +214,10 @@ describe('Products', () => {
 
     describe('POST /api/products/getByCategory', () => {
         it('User can get products by category', async () => {
-            await productMustExist(FRESH_COFFEE_PLATINO)
-            await productMustExist(FRESH_COFFEE_GOOD_CUP)
+            let { _id: parentId } = await createCategory({title: 'кофе'})
+            await createCategory({title: 'моносорта', parentId }) //?
+            await createProduct(FRESH_COFFEE_PLATINO)
+            await createProduct(FRESH_COFFEE_GOOD_CUP)
 
             await agent
                 .post('/api/products/getByCategory')
@@ -209,7 +232,9 @@ describe('Products', () => {
         })
 
         it('User get 404 for non-existent category', async () => {
-            await productMustExist(FRESH_COFFEE_PLATINO)
+            let { _id: parentId } = await createCategory({title: 'кофе'})
+            await createCategory({title: 'моносорта', parentId }) //?
+            await createProduct(FRESH_COFFEE_PLATINO)
 
             await agent
                 .post('/api/products/getByCategory')

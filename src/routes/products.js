@@ -1,6 +1,6 @@
 const { Router } = require( 'express')
 const { hasRole } = require('../middlewares/auth')
-const { create, getBySlug, getByCategory, get } = require('../controllers/product')
+const { create, getBySlug, getByCategory, get, del } = require('../controllers/product')
 
 const router = Router()
 
@@ -14,5 +14,6 @@ router.post('/getBySlug', getBySlug)
 router.post('/getByCategory', getByCategory)
 
 router.post('/create', hasRole(['admin']), create)
+router.post('/delete', hasRole(['admin']), del)
 
 module.exports = router
