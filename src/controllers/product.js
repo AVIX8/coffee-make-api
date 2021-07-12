@@ -1,10 +1,9 @@
-// const mongoose = require('mongoose')
+const mongoose = require('mongoose')
 const Product = require('../models/Product.js')
 const Category = require('../models/Category.js')
 const slugify = require('slugify')
 
 const messages = {
-    invalidSlug: 'Не корректный slug',
     badСategory: 'Такой категории не существует',
     invalidProductId: 'Неверный идентификатор товара',
     productNotFound: 'Не удалось найти товар',
@@ -17,9 +16,7 @@ module.exports.getBySlug = async (req, res) => {
 
     let product = await Product.findOne({ slug })
     if (!product)
-        return res
-            .status(404)
-            .send({ message: messages.productNotFound })
+        return res.status(404).send({ message: messages.productNotFound })
     return res.json(product)
 }
 
@@ -28,43 +25,43 @@ module.exports.getByCategory = async (req, res) => {
 
     let products = await Product.find({ category })
     if (!products || !products.length)
-        return res
-            .status(404)
-            .send({ message: messages.productsNotFound })
+        return res.status(404).send({ message: messages.productsNotFound })
     return res.json(products)
 }
 
 module.exports.del = async (req, res) => {
     let product = await Product.findById(req.body.id)
     if (!product) {
-        return res
-            .status(400)
-            .send({ message: messages.invalidProductId })
+        return res.status(400).send({ message: messages.invalidProductId })
     }
     let deletedProduct = await Product.findByIdAndDelete(product._id)
 
-    // нужно удалять картинки
-    // if (product.imgs) {
-    //     const imageId = new product.Types.ObjectId(product.image)
-    //     req.app.locals.bucket.delete(imageId)
-    // }
-
+    if (product.imgs.length)
+        product.imgs.forEach((image) => {
+            const imageId = new mongoose.Types.ObjectId(image)
+            req.app.locals.bucket.delete(imageId)
+        })
+        
     return res.send({ deletedProduct })
 }
 
 module.exports.create = async (req, res) => {
-    const { slug, descr, title, category } = req.body
-    if (!slug || slug != slugify(slug))
-        return res.status(400).json({ message: messages.invalidSlug })
-    
+    const { title, category } = req.body
+    let slug = slugify(title)
+    if (await Product.findOne({ slug })) {
+        slug += '-' + Math.floor(Math.random() * 10)
+        while (await Product.findOne({ slug }))
+            slug += Math.floor(Math.random() * 10)
+    }
+
     if (!category)
         return res.status(400).json({ message: messages.badСategory })
     let cat = await Category.findOne({ path: category })
-    if (!cat)
-        return res.status(400).json({ message: messages.badСategory })
-    
+    if (!cat) return res.status(400).json({ message: messages.badСategory })
+
     let prod = new Product({
-        title, slug, descr, category
+        ...req.body,
+        slug,
     })
 
     prod.save()
@@ -73,11 +70,9 @@ module.exports.create = async (req, res) => {
         })
         .catch((err) => {
             let message
-            if (err.code == 11000) {
+            if (err.code == 11000)
                 message = 'Товар с таким слагом уже существует'
-            } else {
-                console.log(err)
-            }
+            else console.log(err)
 
             res.status(400).send({
                 message: message ?? 'не удалось создать товар',
@@ -86,8 +81,11 @@ module.exports.create = async (req, res) => {
 }
 
 module.exports.get = async (req, res) => {
-    let { filters, skip } = req.body
-    let products = await Product.find(filters).skip(skip).limit(50)
+    let { filters, skip, limit } = req.body
+    if (filters.category != undefined) {
+        //
+    }
+    let products = await Product.find(filters).skip(skip).limit(limit ?? 50)
 
     if (!products || !products.length)
         return res.status(404).send({ message: messages.productsNotFound })

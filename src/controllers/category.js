@@ -27,6 +27,12 @@ module.exports.getProducts = async (req, res) => {
     return res.send(products)
 }
 
+module.exports.getInfo = async (req, res) => {
+    let characteristics = await Product.find({category: req.body.category}).distinct("characteristics")
+    let attributes = await Product.find({category: req.body.category}).distinct("attributes")
+    res.send({attributes, characteristics})
+}
+
 module.exports.create = async (req, res) => {
     let { title, parentId } = req.body
 

@@ -1,6 +1,6 @@
 const { Router } = require( 'express')
 const { hasRole } = require('../middlewares/auth')
-const { create, getBySlug, getByCategory, get, del } = require('../controllers/product')
+const { get, getBySlug, getByCategory, create, del } = require('../controllers/product')
 
 const router = Router()
 

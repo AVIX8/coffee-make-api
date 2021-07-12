@@ -11,24 +11,34 @@ const productSchema = new mongoose.Schema({
         required: true,
         unique: true,
     },
+    category: {
+        type: String,
+    },
     descr: {
         type: String,
+    },
+    price: {
+        type: Number
     },
     imgs: {
         type: [{ type: String }],
     },
-    category: {
-        type: String,
+    attributes: {
+        type: [{ type: Object }],
     },
     characteristics: {
-        type: Array,
+        type: [{ type: Object }],
     },
     optionTitle: {
         type: String,
     },
     options: {
         type: Array,
-    }
+    },
+    date: {
+        type: Date,
+        default: Date.now(),
+    },
 })
 
 const Product = connection.model('Product', productSchema) 
