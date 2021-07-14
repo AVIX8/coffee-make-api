@@ -31,15 +31,19 @@ module.exports.getImageById = (req, res) => {
         }
 
         if (
+            file.contentType === 'image/jpg' ||
             file.contentType === 'image/jpeg' ||
-            file.contentType === 'image/png'
+            file.contentType === 'image/png' ||
+            file.contentType === 'image/gif'
         ) {
             const downloadStream = req.app.locals.bucket.openDownloadStream(_id)
             downloadStream.pipe(res)
         } else {
+            console.log(file.contentType)
             return res.status(404).send({
                 err: 'Not an image',
             })
+
         }
     })
 }

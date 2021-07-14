@@ -4,6 +4,7 @@ const Category = require('../models/Category.js')
 const slugify = require('slugify')
 
 const messages = {
+    titleIsRequired: 'Нет названия продукта',
     badСategory: 'Такой категории не существует',
     invalidProductId: 'Неверный идентификатор товара',
     productNotFound: 'Не удалось найти товар',
@@ -41,12 +42,21 @@ module.exports.del = async (req, res) => {
             const imageId = new mongoose.Types.ObjectId(image)
             req.app.locals.bucket.delete(imageId)
         })
-        
+
     return res.send({ deletedProduct })
 }
 
 module.exports.create = async (req, res) => {
-    const { title, category } = req.body
+    const data = JSON.parse(req.body.data)
+    const { title, category } = data ?? {}
+
+    
+    if (!category)
+        return res.status(400).json({ message: messages.badСategory })
+    let cat = await Category.findOne({ path: category })
+    if (!cat) return res.status(400).json({ message: messages.badСategory })
+
+    if (!title) return res.status(400).json({message: messages.titleIsRequired })
     let slug = slugify(title)
     if (await Product.findOne({ slug })) {
         slug += '-' + Math.floor(Math.random() * 10)
@@ -54,14 +64,16 @@ module.exports.create = async (req, res) => {
             slug += Math.floor(Math.random() * 10)
     }
 
-    if (!category)
-        return res.status(400).json({ message: messages.badСategory })
-    let cat = await Category.findOne({ path: category })
-    if (!cat) return res.status(400).json({ message: messages.badСategory })
+    let imgs = []
+    if (req.files.length)
+        req.files.forEach((file) => {
+            imgs.push(file.id)
+        })
 
     let prod = new Product({
-        ...req.body,
+        ...data,
         slug,
+        imgs,
     })
 
     prod.save()
@@ -85,7 +97,9 @@ module.exports.get = async (req, res) => {
     if (filters.category != undefined) {
         //
     }
-    let products = await Product.find(filters).skip(skip).limit(limit ?? 50)
+    let products = await Product.find(filters ?? {})
+        .skip(skip ?? 0)
+        .limit(limit ?? 50)
 
     if (!products || !products.length)
         return res.status(404).send({ message: messages.productsNotFound })

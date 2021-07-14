@@ -28,9 +28,16 @@ module.exports.getProducts = async (req, res) => {
 }
 
 module.exports.getInfo = async (req, res) => {
+    let products = Product.find({category: req.body.category})
+    let characteristics = await products.distinct("characteristics")
+    let attributes = await products.distinct("attributes")
+    let optionTitles = await products.distinct("optionTitle")
+    res.send({attributes, characteristics, optionTitles})
+}
+
+module.exports.getFilters = async (req, res) => {
     let characteristics = await Product.find({category: req.body.category}).distinct("characteristics")
-    let attributes = await Product.find({category: req.body.category}).distinct("attributes")
-    res.send({attributes, characteristics})
+    res.send(characteristics)
 }
 
 module.exports.create = async (req, res) => {
