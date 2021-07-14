@@ -2,7 +2,7 @@ const { Router } = require( 'express')
 const { hasRole } = require('../middlewares/auth')
 
 const { upload } = require('../middlewares/upload')
-const { get, getBySlug, getByCategory, create, del } = require('../controllers/product')
+const { get, getBySlug, getByCategory, create, update, del } = require('../controllers/product')
 
 const router = Router()
 
@@ -15,7 +15,8 @@ router.post('/get', get)
 router.post('/getBySlug', getBySlug)
 router.post('/getByCategory', getByCategory)
 
-router.post('/create', hasRole(['admin']), upload.array('images', 10), create)
+router.post('/create', hasRole(['admin']), upload.array('images'), create)
+router.post('/update', hasRole(['admin']), upload.array('images'), update)
 router.post('/delete', hasRole(['admin']), del)
 
 module.exports = router

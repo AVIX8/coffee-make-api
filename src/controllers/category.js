@@ -92,8 +92,7 @@ module.exports.update = async (req, res) => {
 
     if (req.file) {
         if (category.image) {
-            const imageId = new mongoose.Types.ObjectId(category.image)
-            req.app.locals.bucket.delete(imageId)
+            req.app.locals.bucket.delete(new mongoose.Types.ObjectId(category.image))
         }
 
         await Category.findOneAndUpdate(
@@ -156,8 +155,7 @@ module.exports.del = async (req, res) => {
     let deletedCategory = await Category.findByIdAndDelete(category._id)
 
     if (category.image) {
-        const imageId = new mongoose.Types.ObjectId(category.image)
-        req.app.locals.bucket.delete(imageId)
+        req.app.locals.bucket.delete(new mongoose.Types.ObjectId(category.image))
     }
 
     return res.send({ deletedCategory })

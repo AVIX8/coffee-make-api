@@ -37,11 +37,9 @@ module.exports.del = async (req, res) => {
     }
     let deletedProduct = await Product.findByIdAndDelete(product._id)
 
-    if (product.imgs.length)
-        product.imgs.forEach((image) => {
-            const imageId = new mongoose.Types.ObjectId(image)
-            req.app.locals.bucket.delete(imageId)
-        })
+    product.imgs.forEach((image) => {
+        req.app.locals.bucket.delete(new mongoose.Types.ObjectId(image))
+    })
 
     return res.send({ deletedProduct })
 }
@@ -50,13 +48,13 @@ module.exports.create = async (req, res) => {
     const data = JSON.parse(req.body.data)
     const { title, category } = data ?? {}
 
-    
     if (!category)
         return res.status(400).json({ message: messages.badСategory })
     let cat = await Category.findOne({ path: category })
     if (!cat) return res.status(400).json({ message: messages.badСategory })
 
-    if (!title) return res.status(400).json({message: messages.titleIsRequired })
+    if (!title)
+        return res.status(400).json({ message: messages.titleIsRequired })
     let slug = slugify(title)
     if (await Product.findOne({ slug })) {
         slug += '-' + Math.floor(Math.random() * 10)
@@ -65,10 +63,9 @@ module.exports.create = async (req, res) => {
     }
 
     let imgs = []
-    if (req.files.length)
-        req.files.forEach((file) => {
-            imgs.push(file.id)
-        })
+    req.files.forEach((file) => {
+        imgs.push(file.id)
+    })
 
     let prod = new Product({
         ...data,
@@ -77,6 +74,68 @@ module.exports.create = async (req, res) => {
     })
 
     prod.save()
+        .then((item) => {
+            res.json(item)
+        })
+        .catch((err) => {
+            let message
+            if (err.code == 11000)
+                message = 'Товар с таким слагом уже существует'
+            else console.log(err)
+
+            res.status(400).send({
+                message: message ?? 'не удалось создать товар',
+            })
+        })
+}
+
+module.exports.update = async (req, res) => {
+    const data = JSON.parse(req.body.data)
+    const product = await Product.findById(data._id)
+    
+    if (product.category !== data.category) {
+        if (!data.category)
+            return res.status(400).json({ message: messages.badСategory })
+        let cat = await Category.findOne({ path: data.category })
+        if (!cat) return res.status(400).json({ message: messages.badСategory })
+        product.category = data.category
+    }
+
+    if (product.title !== data.title) {
+        if (!data.title)
+            return res.status(400).json({ message: messages.titleIsRequired })
+
+        product.title = data.title
+        let slug = slugify(data.title)
+        if (await Product.findOne({ slug })) {
+            slug += '-' + Math.floor(Math.random() * 10)
+            while (await Product.findOne({ slug }))
+                slug += Math.floor(Math.random() * 10)
+        }
+        product.slug = slug
+    }
+
+    product.descr = data.descr
+    product.characteristics = data.characteristics
+    product.attributes = data.attributes
+    product.optionTitle = data.optionTitle
+    product.options = data.options
+    product.price = data.price
+
+
+    let newImgs = []
+    data.images.forEach((img) => {
+        if (img.id) newImgs.push(img.id)
+        else newImgs.push(req.files.shift().id)
+    })
+    let toDel = product.imgs.filter((id) => !newImgs.includes(id))
+    toDel.forEach((id) => {
+        req.app.locals.bucket.delete(new mongoose.Types.ObjectId(id))
+    })
+    product.imgs = newImgs
+
+    product
+        .save()
         .then((item) => {
             res.json(item)
         })
