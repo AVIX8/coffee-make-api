@@ -12,10 +12,17 @@ const messages = {
     badLogin: 'Пароль или адрес электронной почты неверны',
 }
 
-const issueAcessToken = (user) =>
+const issueAccessToken = (user) =>
     jwt.sign({ id: user._id, roles: user.roles }, process.env.JWT_SECRET_KEY, {
         expiresIn: '10s',
     })
+
+module.exports.user = async (req,res) => {
+    let user = await User.findById(req.user.id)
+    user.password = undefined
+    return res.send({ user })
+}
+
 
 module.exports.register = async (req, res) => {
     const { error } = registerValidation(req.body)
@@ -48,7 +55,7 @@ module.exports.login = async (req, res) => {
     if (!user || !bcryptjs.compareSync(password, user.password))
     return res.status(403).json({ message: messages.badLogin })
     
-    const accessToken = issueAcessToken(user)
+    const accessToken = issueAccessToken(user)
     const refreshToken = uuid()
     const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress
 
@@ -63,18 +70,18 @@ module.exports.refresh = async (req, res) => {
     
     if (!session || !session.user) return res.status(404).send()    
     
-    Session.findByIdAndDelete(session._id).exec()
+    await Session.findByIdAndDelete(session._id).exec()
 
-    const accessToken = issueAcessToken(session.user)
+    const accessToken = issueAccessToken(session.user)
     const refreshToken = uuid()
     const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress
-    console.log(ip)
 
-    Session.create({ token: refreshToken, user: session.user, ip })
+    await Session.create({ token: refreshToken, user: session.user, ip })
     return res.json({ accessToken, refreshToken })
 }
 
 module.exports.logout = async (req, res) => {
+    console.log(req.body);
     await Session.findOneAndDelete({
         token: req.body.refreshToken
     }).exec()

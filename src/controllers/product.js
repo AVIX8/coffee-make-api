@@ -12,6 +12,12 @@ const messages = {
     // badLogin: 'Пароль или адрес электронной почты неверны',
 }
 
+Array.prototype.sortBy = function (p) {
+    return this.slice(0).sort(function (a, b) {
+        return a[p] > b[p] ? 1 : a[p] < b[p] ? -1 : 0
+    })
+}
+
 module.exports.getBySlug = async (req, res) => {
     let { slug } = req.body //?
 
@@ -66,6 +72,10 @@ module.exports.create = async (req, res) => {
     req.files.forEach((file) => {
         imgs.push(file.id)
     })
+    if (data.characteristics?.length)
+        data.characteristics = data.characteristics.sortBy('title')
+    if (data.attributes?.length)
+        data.attributes = data.attributes.sortBy('title')
 
     let prod = new Product({
         ...data,
@@ -92,7 +102,7 @@ module.exports.create = async (req, res) => {
 module.exports.update = async (req, res) => {
     const data = JSON.parse(req.body.data)
     const product = await Product.findById(data._id)
-    
+
     if (product.category !== data.category) {
         if (!data.category)
             return res.status(400).json({ message: messages.badСategory })
@@ -116,17 +126,22 @@ module.exports.update = async (req, res) => {
     }
 
     product.descr = data.descr
-    product.characteristics = data.characteristics
-    product.attributes = data.attributes
+    if (data.characteristics?.length)
+        product.characteristics = data.characteristics.sortBy('title')
+    if (data.attributes?.length)
+        product.attributes = data.attributes.sortBy('title')
     product.optionTitle = data.optionTitle
     product.options = data.options
     product.price = data.price
 
-
     let newImgs = []
     data.images.forEach((img) => {
-        if (img.id) newImgs.push(img.id)
-        else newImgs.push(req.files.shift().id)
+        if (img.id) {
+            if (product.imgs.includes(img.id)) newImgs.push(img.id)
+            else console.log(`${img.id} нету`)
+        } else if (req.files.length) {
+            newImgs.push(req.files.shift().id)
+        }
     })
     let toDel = product.imgs.filter((id) => !newImgs.includes(id))
     toDel.forEach((id) => {
@@ -152,13 +167,19 @@ module.exports.update = async (req, res) => {
 }
 
 module.exports.get = async (req, res) => {
-    let { filters, skip, limit } = req.body
-    if (filters.category != undefined) {
-        //
-    }
-    let products = await Product.find(filters ?? {})
+    console.log(req.body)
+    let { category, deep, filters, skip, limit } = req.body
+    
+    filters = filters ?? {}
+    deep = deep ?? true
+    category = category ?? ''
+    
+    let products = await Product.find({
+        ...filters,
+        category: new RegExp('^' + category + (deep ? '' : '$')),
+    })
         .skip(skip ?? 0)
-        .limit(limit ?? 50)
+        .limit(limit ?? 3)
 
     if (!products || !products.length)
         return res.status(404).send({ message: messages.productsNotFound })

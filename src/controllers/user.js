@@ -1,6 +1,4 @@
-module.exports.getUserData = (req, res) => {
-    return res.send({ user: req.user })
-}
+// const User = require('../models/User.js')
 
 // доделать
 module.exports.profile = (req, res) => {
