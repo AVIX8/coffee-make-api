@@ -10,19 +10,19 @@ const messages = {
     userAlreadyExists:
         'Пользователь с данным адресом электронной почты уже зарегистрирован',
     badLogin: 'Пароль или адрес электронной почты неверны',
+    invalidRefreshToken: 'Не верный токен',
 }
 
 const issueAccessToken = (user) =>
     jwt.sign({ id: user._id, roles: user.roles }, process.env.JWT_SECRET_KEY, {
-        expiresIn: '10s',
+        expiresIn: '5s',
     })
 
-module.exports.user = async (req,res) => {
+module.exports.user = async (req, res) => {
     let user = await User.findById(req.user.id)
     user.password = undefined
     return res.send({ user })
 }
-
 
 module.exports.register = async (req, res) => {
     const { error } = registerValidation(req.body)
@@ -48,13 +48,13 @@ module.exports.register = async (req, res) => {
 module.exports.login = async (req, res) => {
     const { error } = loginValidation(req.body)
     if (error) return res.status(400).json(error.details[0])
-    
+
     const { email, password } = req.body
     const user = await User.findOne({ email })
-    
+
     if (!user || !bcryptjs.compareSync(password, user.password))
-    return res.status(403).json({ message: messages.badLogin })
-    
+        return res.status(403).json({ message: messages.badLogin })
+
     const accessToken = issueAccessToken(user)
     const refreshToken = uuid()
     const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress
@@ -64,26 +64,30 @@ module.exports.login = async (req, res) => {
 }
 
 module.exports.refresh = async (req, res) => {
+    console.log('length before refresh:', (await Session.find()).length)
     const session = await Session.findOne({
         token: req.body.refreshToken,
     }).populate('user')
-    
-    if (!session || !session.user) return res.status(404).send()    
-    
-    await Session.findByIdAndDelete(session._id).exec()
+
+    if (!session || !session.user) return res.status(404).send()
+
+    let deleted = await Session.findByIdAndDelete(session._id).exec()
+    if (!deleted)
+        return res.status(400).json({ message: messages.invalidRefreshToken })
 
     const accessToken = issueAccessToken(session.user)
     const refreshToken = uuid()
     const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress
 
     await Session.create({ token: refreshToken, user: session.user, ip })
+    console.log('length after refresh:', (await Session.find()).length)
     return res.json({ accessToken, refreshToken })
 }
 
 module.exports.logout = async (req, res) => {
-    console.log(req.body);
+    console.log(req.body)
     await Session.findOneAndDelete({
-        token: req.body.refreshToken
+        token: req.body.refreshToken,
     }).exec()
     return res.status(200).send()
 }
