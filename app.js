@@ -43,7 +43,7 @@ app.use('/api/storage', storageRoute)
 
 const port = process.env.PORT ?? 4000
 app.listen(port, () => {
-    console.log(`🚀 Serve at http://loacalhost:${port}`)
+    console.log(`🚀 Serve at http://localhost:${port}`)
 })
 
 module.exports = app

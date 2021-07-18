@@ -20,7 +20,7 @@ Array.prototype.sortBy = function (p) {
 
 module.exports.getBySlug = async (req, res) => {
     let { slug } = req.body //?
-
+    
     let product = await Product.findOne({ slug })
     if (!product)
         return res.status(404).send({ message: messages.productNotFound })
