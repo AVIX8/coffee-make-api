@@ -167,11 +167,10 @@ module.exports.update = async (req, res) => {
 }
 
 module.exports.get = async (req, res) => {
-    console.log(req.body)
     let { category, deep, filters, skip, limit } = req.body
     
     filters = filters ?? {}
-    deep = deep ?? true
+    deep = deep ?? false
     category = category ?? ''
     
     let products = await Product.find({
@@ -179,7 +178,7 @@ module.exports.get = async (req, res) => {
         category: new RegExp('^' + category + (deep ? '' : '$')),
     })
         .skip(skip ?? 0)
-        .limit(limit ?? 3)
+        .limit(limit ?? 20)
 
     if (!products || !products.length)
         return res.status(404).send({ message: messages.productsNotFound })
