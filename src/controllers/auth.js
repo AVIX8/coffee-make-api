@@ -1,7 +1,6 @@
 const User = require('../models/User')
 const Session = require('../models/Session')
 const jwt = require('jsonwebtoken')
-const uuid = require('uuid').v4
 const bcryptjs = require('bcryptjs')
 
 const { registerValidation, loginValidation } = require('../validation/user')
@@ -15,7 +14,12 @@ const messages = {
 
 const issueAccessToken = (user) =>
     jwt.sign({ id: user._id, roles: user.roles }, process.env.JWT_SECRET_KEY, {
-        expiresIn: '5s',
+        expiresIn: '10s',
+    })
+
+const issueRefreshToken = (user) =>
+    jwt.sign({ id: user._id }, process.env.JWT_SECRET_KEY, {
+        expiresIn: '35d',
     })
 
 module.exports.user = async (req, res) => {
@@ -56,7 +60,7 @@ module.exports.login = async (req, res) => {
         return res.status(403).json({ message: messages.badLogin })
 
     const accessToken = issueAccessToken(user)
-    const refreshToken = uuid()
+    const refreshToken = issueRefreshToken(user)
     const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress
 
     Session.create({ token: refreshToken, user, ip })
@@ -64,7 +68,11 @@ module.exports.login = async (req, res) => {
 }
 
 module.exports.refresh = async (req, res) => {
-    console.log('length before refresh:', (await Session.find()).length)
+    try {
+        jwt.verify(req.body.refreshToken, process.env.JWT_SECRET_KEY)
+    } catch (e) {
+        return res.status(400).json({ error: e })
+    }
     const session = await Session.findOne({
         token: req.body.refreshToken,
     }).populate('user')
@@ -76,11 +84,10 @@ module.exports.refresh = async (req, res) => {
         return res.status(400).json({ message: messages.invalidRefreshToken })
 
     const accessToken = issueAccessToken(session.user)
-    const refreshToken = uuid()
+    const refreshToken = issueRefreshToken(session.user)
     const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress
 
     await Session.create({ token: refreshToken, user: session.user, ip })
-    console.log('length after refresh:', (await Session.find()).length)
     return res.json({ accessToken, refreshToken })
 }
 
