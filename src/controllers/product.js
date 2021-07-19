@@ -61,7 +61,7 @@ module.exports.create = async (req, res) => {
 
     if (!title)
         return res.status(400).json({ message: messages.titleIsRequired })
-    let slug = slugify(title)
+    let slug = slugify(title, {lower: true})
     if (await Product.findOne({ slug })) {
         slug += '-' + Math.floor(Math.random() * 10)
         while (await Product.findOne({ slug }))
@@ -116,7 +116,7 @@ module.exports.update = async (req, res) => {
             return res.status(400).json({ message: messages.titleIsRequired })
 
         product.title = data.title
-        let slug = slugify(data.title)
+        let slug = slugify(data.title, {lower: true})
         if (await Product.findOne({ slug })) {
             slug += '-' + Math.floor(Math.random() * 10)
             while (await Product.findOne({ slug }))
