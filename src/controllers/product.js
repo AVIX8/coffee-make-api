@@ -167,32 +167,34 @@ module.exports.update = async (req, res) => {
 }
 
 module.exports.get = async (req, res) => {
+    console.log(req.body)
     let { category, deep, characteristics, skip, limit } = req.body
 
     characteristics = characteristics ?? {}
     deep = deep ?? false
     category = category ?? ''
 
-    let match = {
-        characteristics: {
+    let match = {}
+    if (Object.keys(characteristics).length) {
+        match.characteristics = {
             $all: [],
-        },
-    }
+        }
 
-    let index = 0
-    for (const [title, values] of Object.entries(characteristics)) {
-        match.characteristics.$all.push({
-            $elemMatch: {
-                $in: [],
-            },
-        })
-        values.forEach((value) => {
-            match.characteristics.$all[index].$elemMatch.$in.push({
-                title,
-                value,
+        let index = 0
+        for (const [title, values] of Object.entries(characteristics)) {
+            match.characteristics.$all.push({
+                $elemMatch: {
+                    $in: [],
+                },
             })
-        })
-        index++
+            values.forEach((value) => {
+                match.characteristics.$all[index].$elemMatch.$in.push({
+                    title,
+                    value,
+                })
+            })
+            index++
+        }
     }
     match.category = new RegExp('^' + category + (deep ? '' : '$'))
     let products = await Product.aggregate([
