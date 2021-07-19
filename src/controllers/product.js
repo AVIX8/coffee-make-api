@@ -20,7 +20,7 @@ Array.prototype.sortBy = function (p) {
 
 module.exports.getBySlug = async (req, res) => {
     let { slug } = req.body //?
-    
+
     let product = await Product.findOne({ slug })
     if (!product)
         return res.status(404).send({ message: messages.productNotFound })
@@ -167,19 +167,39 @@ module.exports.update = async (req, res) => {
 }
 
 module.exports.get = async (req, res) => {
-    let { category, deep, filters, skip, limit } = req.body
-    
-    filters = filters ?? {}
+    let { category, deep, characteristics, skip, limit } = req.body
+
+    characteristics = characteristics ?? {}
     deep = deep ?? false
     category = category ?? ''
-    
-    let products = await Product.find({
-        ...filters,
-        category: new RegExp('^' + category + (deep ? '' : '$')),
-    })
-        .skip(skip ?? 0)
-        .limit(limit ?? 20)
 
+    let match = {
+        characteristics: {
+            $all: [],
+        },
+    }
+
+    let index = 0
+    for (const [title, values] of Object.entries(characteristics)) {
+        match.characteristics.$all.push({
+            $elemMatch: {
+                $in: [],
+            },
+        })
+        values.forEach((value) => {
+            match.characteristics.$all[index].$elemMatch.$in.push({
+                title,
+                value,
+            })
+        })
+        index++
+    }
+    match.category = new RegExp('^' + category + (deep ? '' : '$'))
+    let products = await Product.aggregate([
+        { $match: match },
+        { $skip: skip ?? 0 },
+        { $limit: limit ?? 20 },
+    ])
     if (!products || !products.length)
         return res.status(404).send({ message: messages.productsNotFound })
     return res.send(products)
