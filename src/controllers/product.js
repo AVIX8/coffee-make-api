@@ -61,7 +61,7 @@ module.exports.create = async (req, res) => {
 
     if (!title)
         return res.status(400).json({ message: messages.titleIsRequired })
-    let slug = slugify(title, {lower: true})
+    let slug = slugify(title, { lower: true })
     if (await Product.findOne({ slug })) {
         slug += '-' + Math.floor(Math.random() * 10)
         while (await Product.findOne({ slug }))
@@ -116,7 +116,7 @@ module.exports.update = async (req, res) => {
             return res.status(400).json({ message: messages.titleIsRequired })
 
         product.title = data.title
-        let slug = slugify(data.title, {lower: true})
+        let slug = slugify(data.title, { lower: true })
         if (await Product.findOne({ slug })) {
             slug += '-' + Math.floor(Math.random() * 10)
             while (await Product.findOne({ slug }))
@@ -167,41 +167,43 @@ module.exports.update = async (req, res) => {
 }
 
 module.exports.get = async (req, res) => {
-    console.log(req.body)
-    let { category, deep, characteristics, skip, limit } = req.body
+    let { category, deep, characteristics, title, skip, limit } = req.body
 
     characteristics = characteristics ?? {}
-    deep = deep ?? false
-    category = category ?? ''
 
     let match = {}
-    if (Object.keys(characteristics).length) {
-        match.characteristics = {
-            $all: [],
-        }
 
-        let index = 0
-        for (const [title, values] of Object.entries(characteristics)) {
-            match.characteristics.$all.push({
-                $elemMatch: {
-                    $in: [],
-                },
-            })
-            values.forEach((value) => {
-                match.characteristics.$all[index].$elemMatch.$in.push({
-                    title,
-                    value,
-                })
-            })
-            index++
+    if (category && typeof category === 'string')
+        match.category = new RegExp('^' + category + (deep ? '' : '$'))
+
+    if (
+        characteristics &&
+        typeof characteristics === 'object' &&
+        Object.keys(characteristics).length
+    ) {
+        match.characteristics = {
+            $all: Object.entries(characteristics).map(([title, values]) => {
+                return {
+                    $elemMatch: {
+                        $in: values.map((value) => {
+                            return { title, value }
+                        }),
+                    },
+                }
+            }),
         }
     }
-    match.category = new RegExp('^' + category + (deep ? '' : '$'))
-    let products = await Product.aggregate([
-        { $match: match },
-        { $skip: skip ?? 0 },
-        { $limit: limit ?? 20 },
-    ])
+
+    if (title && typeof title === 'string')
+        match.title = { $regex: new RegExp(title), $options: 'i' }
+
+    let pipeline = []
+    pipeline.push({ $match: match })
+    pipeline.push({ $skip: skip ?? 0 })
+    pipeline.push({ $limit: limit ?? 20 })
+
+    let products = await Product.aggregate(pipeline)
+
     if (!products || !products.length)
         return res.status(404).send({ message: messages.productsNotFound })
     return res.send(products)
