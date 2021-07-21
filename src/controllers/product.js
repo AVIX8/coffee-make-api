@@ -73,9 +73,13 @@ module.exports.create = async (req, res) => {
         imgs.push(file.id)
     })
     if (data.characteristics?.length)
-        data.characteristics = data.characteristics.sortBy('title')
+        data.characteristics = data.characteristics.map((x, i) => {
+            return { i, title: x.title, value: x.value }
+        })
     if (data.attributes?.length)
-        data.attributes = data.attributes.sortBy('title')
+        data.attributes = data.attributes.map((x, i) => {
+            return { i, title: x.title, value: x.value }
+        })
 
     let prod = new Product({
         ...data,
@@ -127,9 +131,13 @@ module.exports.update = async (req, res) => {
 
     product.descr = data.descr
     if (data.characteristics?.length)
-        product.characteristics = data.characteristics.sortBy('title')
+        product.characteristics = data.characteristics.map((x, i) => {
+            return { i, title: x.title, value: x.value }
+        })
     if (data.attributes?.length)
-        product.attributes = data.attributes.sortBy('title')
+        product.attributes = data.attributes.map((x, i) => {
+            return { i, title: x.title, value: x.value }
+        })
     product.optionTitle = data.optionTitle
     product.options = data.options
     product.price = data.price
@@ -168,12 +176,12 @@ module.exports.update = async (req, res) => {
 }
 
 module.exports.get = async (req, res) => {
-    let { category, deep, characteristics, title, inStock, skip, limit } = req.body
+    let { category, deep, characteristics, title, inStock, skip, limit } =
+        req.body
 
     let match = {}
 
-    if (typeof inStock === "boolean")
-        match.inStock = inStock
+    if (typeof inStock === 'boolean') match.inStock = inStock
 
     if (category && typeof category === 'string')
         match.category = new RegExp('^' + category + (deep ? '' : '$'))
@@ -187,9 +195,8 @@ module.exports.get = async (req, res) => {
             $all: Object.entries(characteristics).map(([title, values]) => {
                 return {
                     $elemMatch: {
-                        $in: values.map((value) => {
-                            return { title, value }
-                        }),
+                        title,
+                        value: { $in: values }
                     },
                 }
             }),
