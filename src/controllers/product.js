@@ -176,7 +176,7 @@ module.exports.update = async (req, res) => {
 }
 
 module.exports.get = async (req, res) => {
-    let { category, deep, characteristics, title, inStock, skip, limit } =
+    let { category, deep, characteristics, title, inStock, sort, skip, limit } =
         req.body
 
     let match = {}
@@ -208,6 +208,7 @@ module.exports.get = async (req, res) => {
 
     let pipeline = []
     pipeline.push({ $match: match })
+    if (sort && Object.keys(sort).length) pipeline.push({ $sort: sort })
     pipeline.push({ $skip: skip ?? 0 })
     pipeline.push({ $limit: limit ?? 20 })
 
