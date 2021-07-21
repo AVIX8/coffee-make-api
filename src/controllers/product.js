@@ -133,6 +133,7 @@ module.exports.update = async (req, res) => {
     product.optionTitle = data.optionTitle
     product.options = data.options
     product.price = data.price
+    product.inStock = data.inStock
 
     let newImgs = []
     data.images.forEach((img) => {
@@ -167,11 +168,12 @@ module.exports.update = async (req, res) => {
 }
 
 module.exports.get = async (req, res) => {
-    let { category, deep, characteristics, title, skip, limit } = req.body
-
-    characteristics = characteristics ?? {}
+    let { category, deep, characteristics, title, inStock, skip, limit } = req.body
 
     let match = {}
+
+    if (typeof inStock === "boolean")
+        match.inStock = inStock
 
     if (category && typeof category === 'string')
         match.category = new RegExp('^' + category + (deep ? '' : '$'))

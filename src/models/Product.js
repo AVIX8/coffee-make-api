@@ -39,6 +39,10 @@ const productSchema = new mongoose.Schema({
         type: Date,
         default: Date.now(),
     },
+    inStock: {
+        type: Boolean,
+        defauld: false,
+    }
 })
 
 const Product = connection.model('Product', productSchema) 
