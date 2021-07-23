@@ -3,14 +3,7 @@ const Product = require('../models/Product.js')
 const Category = require('../models/Category.js')
 const slugify = require('slugify')
 
-const messages = {
-    titleIsRequired: 'Нет названия продукта',
-    badСategory: 'Такой категории не существует',
-    invalidProductId: 'Неверный идентификатор товара',
-    productNotFound: 'Не удалось найти товар',
-    productsNotFound: 'Не удалось найти товары',
-    // badLogin: 'Пароль или адрес электронной почты неверны',
-}
+const messages = require('../messages.js')
 
 Array.prototype.sortBy = function (p) {
     return this.slice(0).sort(function (a, b) {
@@ -22,6 +15,15 @@ module.exports.getBySlug = async (req, res) => {
     let { slug } = req.body //?
 
     let product = await Product.findOne({ slug })
+    if (!product)
+        return res.status(404).send({ message: messages.productNotFound })
+    return res.json(product)
+}
+
+module.exports.getBySKU = async (req, res) => {
+    let { SKU } = req.body //?
+
+    let product = await Product.findOne({ 'variants.SKU': SKU })
     if (!product)
         return res.status(404).send({ message: messages.productNotFound })
     return res.json(product)
@@ -39,9 +41,10 @@ module.exports.getByCategory = async (req, res) => {
 module.exports.del = async (req, res) => {
     let product = await Product.findById(req.body.id)
     if (!product) {
-        return res.status(400).send({ message: messages.invalidProductId })
+        return res.status(400).send({ message: messages.productNotExist })
     }
-    let deletedProduct = await Product.findByIdAndDelete(product._id)
+
+    let deletedProduct = await product.delete()
 
     product.imgs.forEach((image) => {
         req.app.locals.bucket.delete(new mongoose.Types.ObjectId(image))
@@ -54,13 +57,14 @@ module.exports.create = async (req, res) => {
     const data = JSON.parse(req.body.data)
     const { title, category } = data ?? {}
 
+    if (!title)
+        return res.status(400).json({ message: messages.titleIsRequired })
+
     if (!category)
         return res.status(400).json({ message: messages.badСategory })
     let cat = await Category.findOne({ path: category })
     if (!cat) return res.status(400).json({ message: messages.badСategory })
 
-    if (!title)
-        return res.status(400).json({ message: messages.titleIsRequired })
     let slug = slugify(title, { lower: true })
     if (await Product.findOne({ slug })) {
         slug += '-' + Math.floor(Math.random() * 10)
@@ -87,20 +91,21 @@ module.exports.create = async (req, res) => {
         imgs,
     })
 
-    prod.save()
-        .then((item) => {
-            res.json(item)
-        })
-        .catch((err) => {
-            let message
-            if (err.code == 11000)
-                message = 'Товар с таким слагом уже существует'
-            else console.log(err)
+    try {
+        let item = await prod.save()
+        return res.json(item)
+    } catch (err) {
+        let message
+        if (err.code == 11000) {
+            let SKU = err.keyValue['variants.SKU']
+            if (SKU) message = `Товар с SKU ${SKU} уже существует`
+            else message = 'Товар с таким слагом уже существует'
+        } else console.log(err)
 
-            res.status(400).send({
-                message: message ?? 'не удалось создать товар',
-            })
+        res.status(400).send({
+            message: message ?? 'не удалось создать товар',
         })
+    }
 }
 
 module.exports.update = async (req, res) => {
@@ -138,10 +143,8 @@ module.exports.update = async (req, res) => {
         product.attributes = data.attributes.map((x, i) => {
             return { i, title: x.title, value: x.value }
         })
-    product.optionTitle = data.optionTitle
-    product.options = data.options
-    product.price = data.price
-    product.inStock = data.inStock
+
+    product.variants = data.variants
 
     let newImgs = []
     data.images.forEach((img) => {
@@ -158,21 +161,20 @@ module.exports.update = async (req, res) => {
     })
     product.imgs = newImgs
 
-    product
-        .save()
-        .then((item) => {
-            res.json(item)
+    try {
+        let item = await product.save()
+        return res.json(item)
+    } catch (err) {
+        let message
+        if (err.code == 11000) {
+            let SKU = err.keyValue['variants.SKU']
+            if (SKU) message = `Товар с SKU ${SKU} уже существует`
+            else message = 'Товар с таким слагом уже существует'
+        } else console.log(err)
+        res.status(400).send({
+            message: message ?? 'не удалось создать товар',
         })
-        .catch((err) => {
-            let message
-            if (err.code == 11000)
-                message = 'Товар с таким слагом уже существует'
-            else console.log(err)
-
-            res.status(400).send({
-                message: message ?? 'не удалось создать товар',
-            })
-        })
+    }
 }
 
 module.exports.get = async (req, res) => {
@@ -181,7 +183,7 @@ module.exports.get = async (req, res) => {
 
     let match = {}
 
-    if (typeof inStock === 'boolean') match.inStock = inStock
+    if (typeof inStock === 'boolean') match['variants.inStock'] = inStock
 
     if (category && typeof category === 'string')
         match.category = new RegExp('^' + category + (deep ? '' : '$'))
@@ -196,7 +198,7 @@ module.exports.get = async (req, res) => {
                 return {
                     $elemMatch: {
                         title,
-                        value: { $in: values }
+                        value: { $in: values },
                     },
                 }
             }),

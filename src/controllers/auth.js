@@ -5,12 +5,7 @@ const bcryptjs = require('bcryptjs')
 
 const { registerValidation, loginValidation } = require('../validation/user')
 
-const messages = {
-    userAlreadyExists:
-        'Пользователь с данным адресом электронной почты уже зарегистрирован',
-    badLogin: 'Пароль или адрес электронной почты неверны',
-    invalidRefreshToken: 'Не верный токен',
-}
+const messages = require('../messages.js')
 
 const issueAccessToken = (user) =>
     jwt.sign({ id: user._id, roles: user.roles }, process.env.JWT_SECRET_KEY, {

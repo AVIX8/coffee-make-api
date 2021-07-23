@@ -2,10 +2,7 @@ const mongoose = require('mongoose')
 const Category = require('../models/Category.js')
 const Product = require('../models/Product.js')
 
-let messages = {
-    categoriesNotFound: 'Не удалось найти категории',
-    productsNotFound: 'Не удалось найти товары'
-}
+const messages = require('../messages.js')
 
 module.exports.get = async (req, res) => {
     let { parentPath } = req.body

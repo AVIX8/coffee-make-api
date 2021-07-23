@@ -17,9 +17,6 @@ const productSchema = new mongoose.Schema({
     descr: {
         type: String,
     },
-    price: {
-        type: Number
-    },
     imgs: {
         type: [{ type: String }],
     },
@@ -29,22 +26,16 @@ const productSchema = new mongoose.Schema({
     characteristics: {
         type: [{ type: Object }],
     },
-    optionTitle: {
-        type: String,
-    },
-    options: {
-        type: Array,
+    variants: {
+        type: [{ type: Object}],
     },
     date: {
         type: Date,
         default: Date.now(),
     },
-    inStock: {
-        type: Boolean,
-        defauld: false,
-    }
 })
 
+productSchema.index('variants.SKU', {unique: true})
 const Product = connection.model('Product', productSchema) 
 
 module.exports = Product

@@ -10,11 +10,7 @@ const mongoose = require('mongoose')
 const { connection } = require('./src/config/database')
 
 //Routes
-const authRoute = require('./src/routes/auth')
-const userRoute = require('./src/routes/user')
-const categoryRoute = require('./src/routes/categories')
-const productsRoute = require('./src/routes/products')
-const storageRoute = require('./src/routes/storage')
+const apiRoute = require('./src/routes/api')
 
 const app = express()
 dotenv.config()
@@ -35,11 +31,7 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
 // Routes
-app.use('/api/auth', authRoute)
-app.use('/api/user', userRoute)
-app.use('/api/categories', categoryRoute)
-app.use('/api/products', productsRoute)
-app.use('/api/storage', storageRoute)
+app.use('/api', apiRoute)
 
 const port = process.env.PORT ?? 4000
 app.listen(port, () => {
