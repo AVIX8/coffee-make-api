@@ -135,14 +135,12 @@ module.exports.update = async (req, res) => {
     }
 
     product.descr = data.descr
-    if (data.characteristics?.length)
-        product.characteristics = data.characteristics.map((x, i) => {
-            return { i, title: x.title, value: x.value }
-        })
-    if (data.attributes?.length)
-        product.attributes = data.attributes.map((x, i) => {
-            return { i, title: x.title, value: x.value }
-        })
+    product.characteristics = (data.characteristics ?? []).map((x, i) => {
+        return { i, title: x.title, value: x.value }
+    })
+    product.attributes = (data.attributes ?? []).map((x, i) => {
+        return { i, title: x.title, value: x.value }
+    })
 
     product.variants = data.variants
 
