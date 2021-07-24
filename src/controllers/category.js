@@ -28,8 +28,8 @@ module.exports.getInfo = async (req, res) => {
     let products = Product.find({category: req.body.category})
     let characteristics = await products.distinct("characteristics")
     let attributes = await products.distinct("attributes")
-    let optionTitles = await products.distinct("optionTitle")
-    res.send({attributes, characteristics, optionTitles})
+    let variantsAttributes = await products.distinct("variants.attributes")
+    res.send({attributes, characteristics, variantsAttributes})
 }
 
 module.exports.getFilters = async (req, res) => {
