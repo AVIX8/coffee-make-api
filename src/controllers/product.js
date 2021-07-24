@@ -2,6 +2,7 @@ const mongoose = require('mongoose')
 const Product = require('../models/Product.js')
 const Category = require('../models/Category.js')
 const slugify = require('slugify')
+const RegexEscape = require("regex-escape");
 
 const messages = require('../messages.js')
 
@@ -176,7 +177,7 @@ module.exports.update = async (req, res) => {
 }
 
 module.exports.get = async (req, res) => {
-    let { category, deep, characteristics, title, inStock, sort, skip, limit } =
+    let { category, deep, characteristics, title, SKU, inStock, sort, skip, limit } =
         req.body
 
     let match = {}
@@ -202,9 +203,12 @@ module.exports.get = async (req, res) => {
             }),
         }
     }
-
+    console.log(title, SKU);
     if (title && typeof title === 'string')
-        match.title = { $regex: new RegExp(title), $options: 'i' }
+        match.title = { $regex: RegexEscape(title), $options: 'i' }
+
+    if (SKU && typeof SKU === 'string')
+        match['variants.SKU'] = { $regex: RegexEscape(SKU), $options: 'i' }
 
     let pipeline = []
     pipeline.push({ $match: match })
