@@ -1,6 +1,41 @@
 const mongoose = require('mongoose')
 const { connection } = require('../config/database')
 
+
+const propertySchema = new mongoose.Schema({
+    _id: false,
+    i: {
+        type: Number
+    },
+    title: {
+        type: String,
+        required: true,
+    },
+    value: {
+        type: String,
+        required: true,
+    }
+})
+
+const variantSchema = new mongoose.Schema({
+    SKU: {
+        type: String,
+        required: true,
+        unique: true,
+    },
+    attributes: {
+        type: [propertySchema],
+    },
+    price: {
+        type: Number,
+        required: true,
+    },
+    inStock: {
+        type: Boolean,
+        requred: true,
+    }
+})
+
 const productSchema = new mongoose.Schema({
     title: {
         type: String,
@@ -13,6 +48,7 @@ const productSchema = new mongoose.Schema({
     },
     category: {
         type: String,
+        required: true,
     },
     descr: {
         type: String,
@@ -21,13 +57,13 @@ const productSchema = new mongoose.Schema({
         type: [{ type: String }],
     },
     attributes: {
-        type: [{ type: Object }],
+        type: [propertySchema],
     },
     characteristics: {
-        type: [{ type: Object }],
+        type: [propertySchema],
     },
     variants: {
-        type: [{ type: Object}],
+        type: [variantSchema],
     },
     date: {
         type: Date,
@@ -35,7 +71,6 @@ const productSchema = new mongoose.Schema({
     },
 })
 
-productSchema.index('variants.SKU', {unique: true})
 const Product = connection.model('Product', productSchema) 
 
 module.exports = Product
