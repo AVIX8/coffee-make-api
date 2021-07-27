@@ -1,40 +1,8 @@
 const mongoose = require('mongoose')
 const { connection } = require('../config/database')
 
-
-const propertySchema = new mongoose.Schema({
-    _id: false,
-    i: {
-        type: Number
-    },
-    title: {
-        type: String,
-        required: true,
-    },
-    value: {
-        type: String,
-        required: true,
-    }
-})
-
-const variantSchema = new mongoose.Schema({
-    SKU: {
-        type: String,
-        required: true,
-        unique: true,
-    },
-    attributes: {
-        type: [propertySchema],
-    },
-    price: {
-        type: Number,
-        required: true,
-    },
-    inStock: {
-        type: Boolean,
-        requred: true,
-    }
-})
+const propertySchema = require('./schemas/property')
+const variantSchema = require('./schemas/variant')
 
 const productSchema = new mongoose.Schema({
     title: {
@@ -67,7 +35,7 @@ const productSchema = new mongoose.Schema({
     },
     date: {
         type: Date,
-        default: Date.now(),
+        default: Date.now,
     },
 })
 

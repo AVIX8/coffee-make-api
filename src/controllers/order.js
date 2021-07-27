@@ -1,4 +1,5 @@
 const Product = require('../models/Product.js')
+const Order = require('../models/Order.js')
 
 const messages = require('../messages.js')
 
@@ -26,10 +27,11 @@ async function getValidItems(items) {
                 throw `Товара ${product.title} нет в наличии`
 
             totalPrice += product.variants[0].price * x.quantity
+            product.variants[0].quantity = x.quantity
             return product
         })
     )
-    return { items:validItems, totalPrice }
+    return { items: validItems, totalPrice }
 }
 
 module.exports.get = async (req, res) => {
@@ -44,7 +46,7 @@ module.exports.getValid = async (req, res) => {
         res.status(400).send({ message: error })
     }
 
-    res.status(200).send({validItems})
+    res.status(200).send({ validItems })
 }
 
 module.exports.create = async (req, res) => {
@@ -55,16 +57,43 @@ module.exports.create = async (req, res) => {
     } catch (error) {
         res.status(400).send({ message: error })
     }
-    // console.log(JSON.stringify(validItems), JSON.stringify(req.validItems));
-    if (JSON.stringify(validItems) != JSON.stringify(req.body.validItems)) {
-        res.status(426).send({
+    if (JSON.stringify(validItems) != JSON.stringify(req.body.validItems))
+        return res.status(426).send({
             message: 'Информация о товарах была обновлена',
             validItems,
         })
-    } else {
-        res.status(200).send({
-            message: 'Заказ успешно оформлен',
-            orderId: 'пока не работает',
+    
+    let { fullName, phone, address } = req.body
+
+    let order = await Order.create( {
+
+        fullName,
+        phone,
+        address,
+        totalPrice: validItems.totalPrice,
+        items: validItems.items.map(item => {
+            return {
+                product: item,
+                variant: item.variants[0],
+                SKU: item.variants[0].SKU,
+                price: item.variants[0].price,
+                quantity: item.variants[0].quantity,
+            }
+        })
+        
+    }
+    )
+    
+
+    try {
+        let savedOrder = await order.save()
+        savedOrder = await savedOrder.populate('items.product').execPopulate()
+        console.log(savedOrder);
+        return res.json(savedOrder)
+    } catch (err) {
+        console.log(err)
+        res.status(400).send({
+            message: 'Не удалось создать заказ',
         })
     }
 }
