@@ -1,12 +1,12 @@
 const { Router } = require( 'express')
-const { isAuth } = require('../middlewares/auth')
+const { isAuth, hasRole } = require('../middlewares/auth')
 
 const { get, getValid, create, createWithLogin } = require('../controllers/order')
 
 const router = Router()
 
 
-router.post('/getInfo', get)
+router.post('/get', hasRole(['admin']), get)
 router.post('/getValid', getValid)
 
 router.post('/create', create)

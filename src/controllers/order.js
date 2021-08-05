@@ -1,3 +1,6 @@
+
+const RegexEscape = require("regex-escape");
+
 const Product = require('../models/Product.js')
 const Order = require('../models/Order.js')
 
@@ -35,7 +38,15 @@ async function getValidItems(items) {
 }
 
 module.exports.get = async (req, res) => {
-    res.send(req.body)
+    let { code, limit, skip  } = req.body
+
+    let pipeline = []
+    pipeline.push({ $match: {code: { $regex: RegexEscape(code), $options: 'i' }} })
+    pipeline.push({ $skip: skip ?? 0 })
+    pipeline.push({ $limit: limit ?? 20 })
+
+    let orders = await Order.aggregate(pipeline)
+    res.send(orders)
 }
 
 module.exports.getValid = async (req, res) => {
